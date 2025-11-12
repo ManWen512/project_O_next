@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle, XCircle, Loader2 } from "lucide-react";
@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
-export default function VerifyEmailPage() {
+function VerifyEmailForm() {
   const [status, setStatus] = useState<"loading" | "success" | "error">(
     "loading"
   );
@@ -116,5 +116,13 @@ export default function VerifyEmailPage() {
         )}
       </Card>
     </div>
+  );
+}
+// Main component with Suspense
+export default function VerifyEmailPage() {
+  return (
+    <Suspense fallback={<div>loading</div>}>
+      <VerifyEmailForm />
+    </Suspense>
   );
 }

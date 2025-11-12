@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Lock, Eye, EyeOff, Check } from "lucide-react";
 import { toast } from "sonner";
@@ -87,7 +87,7 @@ const ValidationItem = ({
   </div>
 );
 
-export default function ResetPasswordPage() {
+function ResetPasswordForm() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -294,5 +294,14 @@ export default function ResetPasswordPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+// Main component with Suspense
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<div>loading</div>}>
+      <ResetPasswordForm />
+    </Suspense>
   );
 }
