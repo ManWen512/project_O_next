@@ -1,4 +1,3 @@
-// app/login/page.tsx
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
@@ -45,11 +44,17 @@ export default function LoginPage() {
   const verified = searchParams.get("verified");
   const reset = searchParams.get("reset");
   const toastShown = useRef(false);
+  const [defaultEmail, setDefaultEmail] = useState("");
+
+  useEffect(() => {
+    const email = searchParams.get("email");
+    if (email) setDefaultEmail(email);
+  }, [searchParams]);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: searchParams.get("email") || "",
+      email: defaultEmail,
       password: "",
     },
   });
@@ -98,10 +103,15 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-zinc-900 px-4 ">
       <div className="text-2xl font-bold fixed left-2 top-2 font-quicksand text-white z-50">
-        Project <img src="/logo.PNG" alt="Logo" className="inline h-12 w-12 -ml-3 mb-1" />
+        Project{" "}
+        <img
+          src="/logo.PNG"
+          alt="Logo"
+          className="inline h-12 w-12 -ml-3 mb-1"
+        />
       </div>
       <div className="w-full max-w-md sm:mt-2 mt-12 ">
-        <Card >
+        <Card>
           <CardHeader>
             <CardTitle className="text-xl">Sign In</CardTitle>
             <CardDescription>
