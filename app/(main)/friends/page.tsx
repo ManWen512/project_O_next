@@ -11,6 +11,7 @@ import {
 import {
   CircleArrowOutUpRight,
   CircleCheckBig,
+  CircleDashed,
   CircleSlash2,
   Search,
 } from "lucide-react";
@@ -200,11 +201,11 @@ export default function Friends() {
                       return (
                         <Card
                           key={user._id}
-                          className=" p-0 mb-2 mx-2"
+                          className=" p-0 mb-2 mx-1"
                           onClick={() => handleSideCol(user._id)}
                         >
                           <CommandItem
-                            className="p-3 flex justify-between items-center"
+                            className="py-3 px-2 flex justify-between items-center"
                             key={user._id}
                           >
                             <div className="flex items-center gap-3">
@@ -224,9 +225,9 @@ export default function Friends() {
                               </div>
                             </div>
                             {isAlreadyFriend(user._id) ? (
-                              <Badge>Already Friends</Badge>
+                              <Badge className="py-1">Friend <CircleCheckBig className=" text-white" /></Badge>
                             ) : isPending ? (
-                              <Badge>Pending</Badge>
+                              <Badge className="py-1">Pending<CircleDashed className=" text-white"/></Badge>
                             ) : (
                               <Tooltip>
                                 <TooltipTrigger asChild>

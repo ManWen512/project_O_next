@@ -7,7 +7,7 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 export default function Feeds() {
   return (
     <div className="w-full">
-
+      
       <div className="grid grid-cols-4 gap-2 w-full">
         <div className="sm:col-span-3 col-span-4 p-4 sm:mx-15">
           <div className="flex justify-between">

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { Check, Image as ImageIcon, X } from "lucide-react";
+import { Check, CircleCheckBig, CircleSlash2, Image as ImageIcon, X } from "lucide-react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { Label } from "./ui/label";
@@ -84,10 +84,10 @@ const PostDrawer = () => {
     <div className="">
       {/* Drawer Implementation */}
       <div
-        className={`fixed inset-x-0 bottom-0 xl:mx-auto 2xl:ml-60 pt-2 xl:w-2xl 2xl:w-5xl  max-w-6xl z-50 flex flex-col bg-white border-t border-gray-200 rounded-t-2xl  shadow-2xl transition-all ease-in-out duration-400 ${
+        className={`fixed inset-x-0 bottom-0 xl:mx-auto md:ml-64 2xl:ml-76 pt-2 md:w-xl xl:w-2xl 2xl:w-4xl  max-w-6xl z-50 flex flex-col bg-white border-t border-gray-200 rounded-t-2xl  shadow-2xl transition-all ease-in-out duration-400 ${
           open
-            ? "h-[80vh] "
-            : "h-[20vh] md:h-[10vh] xl:h-[22vh] overflow-hidden"
+            ? "h-[70vh] sm:h-[75vh] "
+            : "h-[22vh] md:h-[10vh] xl:h-[22vh] overflow-hidden"
         }`}
       >
         <ScrollArea className={`${open ? "overflow-auto" : ""} `}>
@@ -209,8 +209,9 @@ const PostDrawer = () => {
           </div>
 
           {/* Drawer Footer */}
-          <div className=" border-gray-200 p-4 bg-gray-50">
-            <div className="flex gap-3">
+            {open && (
+          <div className="  p-6 ">
+            <div className="flex gap-3 justify-end ">
               <Button
                 onClick={() => {
                   setInputValue("");
@@ -219,16 +220,16 @@ const PostDrawer = () => {
                 }}
                 variant="ghost"
               >
-                Cancel
+                Cancel <CircleSlash2  />
               </Button>
               <Button
                 onClick={handleSubmit}
                 disabled={!inputValue && images.length === 0}
               >
-                Post
+                Post <CircleCheckBig />
               </Button>
             </div>
-          </div>
+          </div>)}
         </ScrollArea>
       </div>
 
