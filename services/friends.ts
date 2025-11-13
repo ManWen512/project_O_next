@@ -9,10 +9,13 @@ interface Friends {
   friends: string[];
   createdAt: string;
   requester: {
+    _id: string | undefined;
     name: string;
+    email:string;
   };
   recipient: {
     _id: string;
+    name: string;
   };
 }
 
@@ -40,6 +43,11 @@ export const friendsApi = createApi({
     //GET pending Friends
     getPendingFriends: builder.query<Friends[], string>({
       query: (id) => `friends/pending/${id}`,
+      providesTags: ["Friend"],
+    }),
+    //GET pending Friends
+    getAllPendingFriends: builder.query<Friends[], string>({
+      query: (id) => `friends/allpending/${id}`,
       providesTags: ["Friend"],
     }),
     //GET Friends lists
@@ -72,7 +80,6 @@ export const friendsApi = createApi({
       }),
       invalidatesTags: ["Friend"],
     }),
-  
   }),
 });
 
@@ -84,5 +91,5 @@ export const {
   useAddFriendsMutation,
   useAcceptFriendsMutation,
   useRejectFriendsMutation,
- 
+  useGetAllPendingFriendsQuery,
 } = friendsApi;

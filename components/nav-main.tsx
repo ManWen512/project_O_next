@@ -1,39 +1,46 @@
-"use client"
+"use client";
 
-import { usePathname, useRouter } from "next/navigation"
-import { Icon } from "@tabler/icons-react"
+import { usePathname, useRouter } from "next/navigation";
+import { Icon } from "@tabler/icons-react";
 import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
+  useSidebar,
+} from "@/components/ui/sidebar";
 
 export function NavMain({
   items,
 }: {
   items: {
-    title: string
-    url: string
-    icon?: Icon
-  }[]
+    title: string;
+    url: string;
+    icon?: Icon;
+  }[];
 }) {
-  const router = useRouter()
-  const pathname = usePathname()
+  const router = useRouter();
+  const pathname = usePathname();
+  const { setOpenMobile } = useSidebar();
+
+  const handleClick = (url: string) => {
+    router.push(url);
+    setOpenMobile(false);
+  };
 
   return (
     <SidebarGroup>
       <SidebarGroupContent className="flex flex-col gap-2">
         <SidebarMenu>
           {items.map((item) => {
-            const isActive = pathname === item.url
+            const isActive = pathname === item.url;
 
             return (
               <SidebarMenuItem key={item.title}>
                 <SidebarMenuButton
                   tooltip={item.title}
-                  onClick={() => router.push(item.url)}
+                  onClick={() => handleClick(item.url)}
                   className={`flex items-center gap-2 transition-colors
                     ${
                       isActive
@@ -46,10 +53,10 @@ export function NavMain({
                   <span>{item.title}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
-            )
+            );
           })}
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>
-  )
+  );
 }

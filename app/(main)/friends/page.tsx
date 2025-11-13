@@ -17,7 +17,7 @@ import {
 
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {  useState } from "react";
+import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
@@ -46,6 +46,7 @@ import {
   useGetFriendByIdQuery,
   useAcceptFriendsMutation,
   useRejectFriendsMutation,
+  useGetAllPendingFriendsQuery,
 } from "@/services/friends";
 
 interface Friends {
@@ -80,6 +81,12 @@ export default function Friends() {
   const { data: userById } = useGetFriendByIdQuery(selectedUserId, {
     skip: !selectedUserId, // Only fetch when selectedUserId exists
   });
+  const { data: allPendingUsers } = useGetAllPendingFriendsQuery(
+    session?.user?.id!,
+    {
+      skip: status !== "authenticated" || !session?.user?.id,
+    }
+  );
   const [newFriend] = useAddFriendsMutation();
   const [acceptFriend] = useAcceptFriendsMutation();
   const [rejectFriend] = useRejectFriendsMutation();
@@ -134,33 +141,40 @@ export default function Friends() {
   };
 
   return (
-    <div className="px-4 my-4">
-      <div className="grid grid-cols-5 gap-4">
+    <div className=" my-4">
+      <div className="grid grid-cols-5 gap-4 sm:mx-15">
         <Tabs
           defaultValue="searchFriends"
           className="mb-4 sm:col-span-3 col-span-5 mx-4 "
         >
-          <div className="">
-            <SidebarTrigger className="-ml-1 sm:hidden mr-1" />
-            <TabsList>
-              <TabsTrigger
-                value="searchFriends"
-                className="font-semibold text-md p-4"
-              >
-                <p className="hidden sm:block">Search Friends</p>
-                <Search className="w-4 h-4 text-[#F66435]" />
-              </TabsTrigger>
-              <TabsTrigger
-                value="friendsRequests"
-                className="relative font-semibold text-md p-4"
-              >
-                <p className="hidden sm:block">Friends Requests</p>
-                <CircleArrowOutUpRight className="w-4 h-4 mt-1 text-[#F66435]" />
-                {pendingUsers && pendingUsers.length > 0 && (
-                  <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-red-500"></div>
-                )}
-              </TabsTrigger>
-            </TabsList>
+          <div className="flex justify-between">
+            <div className="">
+              <SidebarTrigger className="-ml-1 sm:hidden mr-1" />
+              <TabsList>
+                <TabsTrigger
+                  value="searchFriends"
+                  className="font-semibold text-md p-4"
+                >
+                  <p className="hidden sm:block">Search Friends</p>
+                  <Search className="w-4 h-4 text-[#F66435]" />
+                </TabsTrigger>
+                <TabsTrigger
+                  value="friendsRequests"
+                  className="relative font-semibold text-md p-4"
+                >
+                  <p className="hidden sm:block">Friends Requests</p>
+                  <CircleArrowOutUpRight className="w-4 h-4 mt-1 text-[#F66435]" />
+                  {pendingUsers && pendingUsers.length > 0 && (
+                    <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-red-500"></div>
+                  )}
+                </TabsTrigger>
+              </TabsList>
+            </div>
+            <img
+              src="/logo.PNG"
+              alt="Logo"
+              className="inline h-12 w-12 -mt-1 sm:hidden "
+            />
           </div>
 
           <TabsContent value="searchFriends">
@@ -175,55 +189,76 @@ export default function Friends() {
 
                 <ScrollArea className="h-[70vh]">
                   <CommandGroup>
-                    {searchUsers?.map((user) => (
-                      <Card
-                        key={user._id}
-                        className="mx-2 p-0 mb-2 "
-                        onClick={() => handleSideCol(user._id)}
-                      >
-                        <CommandItem className="p-3 flex justify-between items-center">
-                          <div className="flex items-center gap-3">
-                            <Avatar className="h-8 w-8   rounded-full ">
-                              <AvatarImage alt="User Avatar" />
-                              <AvatarFallback className="rounded-full bg-gray-400  ">
-                                CN
-                              </AvatarFallback>
-                            </Avatar>
-                            <span className="">{user.name}</span>
-                          </div>
-                          {isAlreadyFriend(user._id) ? (
-                            <Badge>Already Friends</Badge>
-                          ) : (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  className="cursor-pointer"
-                                  onClick={() => handleSendRequest(user._id!)}
-                                >
-                                  <CircleArrowOutUpRight className="w-4 h-4 text-[#F66435]" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>Add Friend</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          )}
-                        </CommandItem>
-                      </Card>
-                    ))}
+                    {searchUsers?.map((user) => {
+                      const isPending = allPendingUsers?.some(
+                        (f) =>
+                          (f.requester._id === session?.user.id &&
+                            f.recipient._id === user._id) ||
+                          (f.recipient._id === session?.user.id &&
+                            f.requester._id === user._id)
+                      );
+                      return (
+                        <Card
+                          key={user._id}
+                          className=" p-0 mb-2 mx-2"
+                          onClick={() => handleSideCol(user._id)}
+                        >
+                          <CommandItem
+                            className="p-3 flex justify-between items-center"
+                            key={user._id}
+                          >
+                            <div className="flex items-center gap-3">
+                              <Avatar className="h-8 w-8   rounded-full ">
+                                <AvatarImage alt="User Avatar" />
+                                <AvatarFallback className="rounded-full bg-gray-400  ">
+                                  CN
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <span className="font-semibold ">
+                                  {user.name}
+                                </span>
+                                <CardDescription className="text-xs">
+                                  {user.email}
+                                </CardDescription>
+                              </div>
+                            </div>
+                            {isAlreadyFriend(user._id) ? (
+                              <Badge>Already Friends</Badge>
+                            ) : isPending ? (
+                              <Badge>Pending</Badge>
+                            ) : (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    className="cursor-pointer"
+                                    onClick={() => handleSendRequest(user._id!)}
+                                  >
+                                    <CircleArrowOutUpRight className="w-4 h-4 text-[#F66435]" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Add Friend</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            )}
+                          </CommandItem>
+                        </Card>
+                      );
+                    })}
                   </CommandGroup>
                 </ScrollArea>
               </CommandList>
             </Command>
           </TabsContent>
           <TabsContent value="friendsRequests">
-            <Card className="p-2">
+            <Card className="p-2 gap-2">
               {!pendingUsers || pendingUsers.length === 0 ? (
                 <div className="text-sm p-4">No Friend Requests</div>
               ) : (
                 pendingUsers?.map((p) => (
-                  <Card className="p-3   " key={p._id}>
+                  <Card className="p-3 " key={p._id}>
                     <div className="flex justify-between items-center">
                       <div className="flex items-center gap-3">
                         <Avatar className="h-8 w-8   rounded-full ">
@@ -232,7 +267,15 @@ export default function Friends() {
                             CN
                           </AvatarFallback>
                         </Avatar>
-                        <span className="">{p.requester.name}</span>
+
+                        <div>
+                          <span className="font-semibold text-sm">
+                            {p.requester.name}
+                          </span>
+                          <CardDescription className="text-xs">
+                            {p.requester.email}
+                          </CardDescription>
+                        </div>
                       </div>
                       <div>
                         <Tooltip>
@@ -279,17 +322,17 @@ export default function Friends() {
           (isMobile ? (
             <Sheet open={sideCol} onOpenChange={setSideCol}>
               <SheetContent className="p-2">
-                {userById && (
-                  <>
-                    <Card className="relative  w-full h-40 bg-gray-100 ">
-                      <Avatar className="absolute -bottom-9 left-6 h-18 w-18  rounded-full ">
-                        <AvatarImage alt="User Avatar" />
-                        <AvatarFallback className="rounded-full bg-gray-400  ">
-                          CN
-                        </AvatarFallback>
-                      </Avatar>
-                    </Card>
-                    <SheetHeader className="p-4">
+                <SheetHeader className="p-4">
+                  {userById && (
+                    <>
+                      <Card className="relative  w-full h-40 bg-gray-100 mb-6">
+                        <Avatar className="absolute -bottom-9 left-6 h-18 w-18  rounded-full ">
+                          <AvatarImage alt="User Avatar" />
+                          <AvatarFallback className="rounded-full bg-gray-400  ">
+                            CN
+                          </AvatarFallback>
+                        </Avatar>
+                      </Card>
                       <SheetTitle className="mt-4 text-2xl ">
                         {userById?.name}
                       </SheetTitle>
@@ -300,9 +343,9 @@ export default function Friends() {
                       {userFriend?.map((friend) => (
                         <div key={friend._id}>{friend.name}</div>
                       ))}
-                    </SheetHeader>
-                  </>
-                )}
+                    </>
+                  )}
+                </SheetHeader>
               </SheetContent>
             </Sheet>
           ) : (

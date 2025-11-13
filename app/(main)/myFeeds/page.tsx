@@ -22,6 +22,7 @@ import {
   useGetPublicPostsQuery,
   useGetUserPostsQuery,
 } from "@/services/post";
+import Profile from "@/components/profile";
 
 interface Post {
   _id: string;
@@ -91,29 +92,36 @@ export default function MyFeeds() {
       <div className="w-full">
         <div className="grid grid-cols-4 gap-2 w-full">
           <div className="sm:col-span-3 col-span-4 p-4 sm:mx-15">
-            <Tabs defaultValue="myFeeds" className="mb-4  mx-4">
-              <div className="flex ">
-                <SidebarTrigger className="-ml-1 sm:hidden mr-1 mt-2" />
-                <TabsList className="">
-                  <TabsTrigger value="myFeeds" className="font-semibold  p-4">
-                    <p className="hidden sm:block">My Feeds</p>
-                    <Newspaper className="w-4 h-4 text-[#F66435]" />
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="publicFeeds"
-                    className="font-semibold p-4"
-                  >
-                    <p className="hidden sm:block">Public Feeds</p>
-                    <Earth className="w-4 h-4 text-[#F66435]" />
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="privateFeeds"
-                    className="font-semibold  p-4"
-                  >
-                    <p className="hidden sm:block">Private Feeds</p>
-                    <LockKeyhole className="w-4 h-4 text-[#F66435]" />
-                  </TabsTrigger>
-                </TabsList>
+            <Tabs defaultValue="myFeeds" className="mb-4">
+              <div className="flex justify-between">
+                <div className="flex ">
+                  <SidebarTrigger className="-ml-1 sm:hidden mr-1 mt-2" />
+                  <TabsList className="">
+                    <TabsTrigger value="myFeeds" className="font-semibold  p-4">
+                      <p className="hidden sm:block">My Feeds</p>
+                      <Newspaper className="w-4 h-4 text-[#F66435]" />
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="publicFeeds"
+                      className="font-semibold p-4"
+                    >
+                      <p className="hidden sm:block">Public Feeds</p>
+                      <Earth className="w-4 h-4 text-[#F66435]" />
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="privateFeeds"
+                      className="font-semibold  p-4"
+                    >
+                      <p className="hidden sm:block">Private Feeds</p>
+                      <LockKeyhole className="w-4 h-4 text-[#F66435]" />
+                    </TabsTrigger>
+                  </TabsList>
+                </div>
+                <img
+                  src="/logo.PNG"
+                  alt="Logo"
+                  className="inline h-12 w-12 -mt-1 sm:hidden "
+                />
               </div>
               <TabsContent value="myFeeds">
                 {!posts || posts.length === 0 ? (
@@ -241,9 +249,8 @@ export default function MyFeeds() {
               </TabsContent>
             </Tabs>
           </div>
-          <div className="hidden sm:block col-span-1 sticky top-6 mr-5  h-fit">
-            <Suggestions />
-            <Recommendations />
+          <div className="hidden sm:block col-span-1 sticky top-6 mr-5 pt-4 h-fit">
+            <Profile />
           </div>
         </div>
       </div>

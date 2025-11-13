@@ -78,8 +78,6 @@ const data = {
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data: session } = useSession();
   
-  console.log(session);
-  
   return (
     <Sidebar collapsible="offcanvas" {...props} >
       <SidebarHeader>
@@ -89,7 +87,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               asChild
               className="data-[slot=sidebar-menu-button]:p-1.5!"
             >
-              <Link href="/dashboard">
+              <Link href="/feeds">
                 <div className="text-2xl font-bold  font-quicksand z-50">
                   Project{" "}
                   <img
