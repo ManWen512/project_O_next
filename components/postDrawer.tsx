@@ -164,8 +164,9 @@ const PostDrawer = () => {
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept="image/*"
+                    accept="image/*,image/heic,image/heif"
                     multiple
+                    capture="environment" // Allows camera on mobile
                     onChange={handleImageUpload}
                     className="hidden"
                   />
