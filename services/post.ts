@@ -37,11 +37,11 @@ export const postApi = createApi({
       providesTags: ["Post"],
     }), // GET /posts
     // getPost: builder.query<Post, number>(), // GET /posts/:id
-    addPost: builder.mutation<Post, CreatePostRequest>({
-      query: (newPost) => ({
+    addPost: builder.mutation<Post, FormData>({
+      query: (formData) => ({
         url: "posts",
         method: "POST",
-        body: newPost,
+        body: formData,
       }),
       invalidatesTags: ["Post"],
     }), // POST /posts

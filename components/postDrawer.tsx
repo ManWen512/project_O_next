@@ -1,7 +1,13 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { Check, CircleCheckBig, CircleSlash2, Image as ImageIcon, X } from "lucide-react";
+import {
+  Check,
+  CircleCheckBig,
+  CircleSlash2,
+  Image as ImageIcon,
+  X,
+} from "lucide-react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { Label } from "./ui/label";
@@ -25,7 +31,8 @@ import { useAddPostMutation } from "@/services/post";
 const PostDrawer = () => {
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
-  const [images, setImages] = useState<string[]>([]);
+  const [images, setImages] = useState<File[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]); // for preview
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [visibility, setVisibility] = useState<string>("public");
@@ -44,20 +51,25 @@ const PostDrawer = () => {
     }
   }, [inputValue, images]);
 
+  // generate previews whenever images change
+  useEffect(() => {
+    const newPreviews: string[] = [];
+    images.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        if (e.target?.result) {
+          newPreviews.push(e.target.result as string);
+          setPreviews([...newPreviews]);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  }, [images]);
+
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
-      const newImages: string[] = [];
-      Array.from(files).forEach((file) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          if (e.target?.result) {
-            newImages.push(e.target.result as string);
-            setImages((prev) => [...prev, e.target!.result as string]);
-          }
-        };
-        reader.readAsDataURL(file);
-      });
+      setImages((prev) => [...prev, ...Array.from(files)]);
     }
   };
 
@@ -66,17 +78,23 @@ const PostDrawer = () => {
   };
 
   const handleSubmit = async () => {
-    await addPost({
-      content: inputValue,
-      image: ["/Introduction.png", "/Introduction.png", "/Introduction.png"],
-      visibility,
-      userId,
-      tags: [],
-    }).unwrap();
+    if (!userId) {
+      toast.error("You must be logged in!");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("content", inputValue);
+    formData.append("visibility", visibility);
+    formData.append("userId", userId);
+    images.forEach((file) => formData.append("image", file));
+
+    await addPost(formData).unwrap();
 
     toast.success("Post created successfully!");
     setInputValue("");
     setImages([]);
+    setPreviews([]);
     setOpen(false);
   };
 
@@ -166,13 +184,13 @@ const PostDrawer = () => {
           <div className="flex-1 p-6">
             <div className="space-y-4">
               {/* Image Preview */}
-              {images.length > 0 && (
+              {previews.length > 0 && (
                 <div className="p-4 bg-gray-50 rounded-lg">
                   <h3 className="font-semibold text-gray-900 mb-3">
-                    Attached Images ({images.length})
+                    Attached Images ({previews.length})
                   </h3>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                    {images.map((img, index) => (
+                    {previews.map((img, index) => (
                       <div key={index} className="relative group">
                         <img
                           src={img}
@@ -209,27 +227,28 @@ const PostDrawer = () => {
           </div>
 
           {/* Drawer Footer */}
-            {open && (
-          <div className="  p-6 ">
-            <div className="flex gap-3 justify-end ">
-              <Button
-                onClick={() => {
-                  setInputValue("");
-                  setImages([]);
-                  setOpen(false);
-                }}
-                variant="ghost"
-              >
-                Cancel <CircleSlash2  />
-              </Button>
-              <Button
-                onClick={handleSubmit}
-                disabled={!inputValue && images.length === 0}
-              >
-                Post <CircleCheckBig />
-              </Button>
+          {open && (
+            <div className="  p-6 ">
+              <div className="flex gap-3 justify-end ">
+                <Button
+                  onClick={() => {
+                    setInputValue("");
+                    setImages([]);
+                    setOpen(false);
+                  }}
+                  variant="ghost"
+                >
+                  Cancel <CircleSlash2 />
+                </Button>
+                <Button
+                  onClick={handleSubmit}
+                  disabled={!inputValue && images.length === 0}
+                >
+                  Post <CircleCheckBig />
+                </Button>
+              </div>
             </div>
-          </div>)}
+          )}
         </ScrollArea>
       </div>
 

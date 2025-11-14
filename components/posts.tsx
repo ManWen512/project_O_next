@@ -68,6 +68,7 @@ export default function Posts() {
   const currentUserId = session?.user?.id;
   const { data: posts, isLoading, error } = useGetPostsQuery();
 
+  console.log(posts)
 
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error loading posts</div>;

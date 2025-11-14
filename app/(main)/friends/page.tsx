@@ -199,53 +199,62 @@ export default function Friends() {
                             f.requester._id === user._id)
                       );
                       return (
-                        <Card
-                          key={user._id}
-                          className=" p-0 mb-2 mx-1"
-                          onClick={() => handleSideCol(user._id)}
-                        >
-                          <CommandItem
-                            className="py-3 px-2 flex justify-between items-center"
+                        <CommandItem className="p-1 mb-2 " key={user._id}>
+                          <Card
                             key={user._id}
+                            className="  w-full py-3 px-2 "
+                            onClick={() => handleSideCol(user._id)}
                           >
-                            <div className="flex items-center gap-3">
-                              <Avatar className="h-8 w-8   rounded-full ">
-                                <AvatarImage alt="User Avatar" />
-                                <AvatarFallback className="rounded-full bg-gray-400  ">
-                                  CN
-                                </AvatarFallback>
-                              </Avatar>
+                            <div className="flex justify-between items-center">
+                              <div className="flex items-center gap-3">
+                                <Avatar className="h-8 w-8   rounded-full ">
+                                  <AvatarImage alt="User Avatar" />
+                                  <AvatarFallback className="rounded-full bg-gray-400  ">
+                                    CN
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div>
+                                  <span className="font-semibold ">
+                                    {user.name}
+                                  </span>
+                                  <CardDescription className="text-xs">
+                                    {user.email}
+                                  </CardDescription>
+                                </div>
+                              </div>
                               <div>
-                                <span className="font-semibold ">
-                                  {user.name}
-                                </span>
-                                <CardDescription className="text-xs">
-                                  {user.email}
-                                </CardDescription>
+                                {isAlreadyFriend(user._id) ? (
+                                  <Badge className="py-1">
+                                    Friend{" "}
+                                    <CircleCheckBig className=" text-white" />
+                                  </Badge>
+                                ) : isPending ? (
+                                  <Badge className="py-1">
+                                    Pending
+                                    <CircleDashed className=" text-white" />
+                                  </Badge>
+                                ) : (
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button
+                                        variant="ghost"
+                                        className="cursor-pointer"
+                                        onClick={() =>
+                                          handleSendRequest(user._id!)
+                                        }
+                                      >
+                                        <CircleArrowOutUpRight className="w-4 h-4 text-[#F66435]" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>Add Friend</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                )}
                               </div>
                             </div>
-                            {isAlreadyFriend(user._id) ? (
-                              <Badge className="py-1">Friend <CircleCheckBig className=" text-white" /></Badge>
-                            ) : isPending ? (
-                              <Badge className="py-1">Pending<CircleDashed className=" text-white"/></Badge>
-                            ) : (
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    className="cursor-pointer"
-                                    onClick={() => handleSendRequest(user._id!)}
-                                  >
-                                    <CircleArrowOutUpRight className="w-4 h-4 text-[#F66435]" />
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p>Add Friend</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            )}
-                          </CommandItem>
-                        </Card>
+                          </Card>
+                        </CommandItem>
                       );
                     })}
                   </CommandGroup>
