@@ -27,6 +27,7 @@ import {
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { useAddPostMutation } from "@/services/post";
+import { Spinner } from "./ui/spinner";
 
 const PostDrawer = () => {
   const [open, setOpen] = useState(false);
@@ -166,7 +167,6 @@ const PostDrawer = () => {
                     type="file"
                     accept="image/*,image/heic,image/heif"
                     multiple
-                    capture="environment" // Allows camera on mobile
                     onChange={handleImageUpload}
                     className="hidden"
                   />
@@ -245,7 +245,7 @@ const PostDrawer = () => {
                   onClick={handleSubmit}
                   disabled={!inputValue && images.length === 0}
                 >
-                  Post <CircleCheckBig />
+                {isLoading ? (<><Spinner/>Posting...</>) : "Post"} <CircleCheckBig className="ml-2" />
                 </Button>
               </div>
             </div>
