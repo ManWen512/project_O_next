@@ -133,8 +133,8 @@ export default function MyFeeds() {
                       className="mb-4 mt-4 shadow-sm  rounded-4xl"
                     >
                       <CardHeader className="flex  items-center px-3 sm:px-6">
-                        <Avatar className="h-6 w-6 rounded-full grayscale   mr-3 ">
-                          <AvatarImage alt="User Avatar" />
+                        <Avatar className="h-6 w-6 rounded-full    mr-3 ">
+                          <AvatarImage src={post.user?.profileImage} alt="User Avatar" />
                           <AvatarFallback className="rounded-full bg-gray-400 p-2 ">
                             CN
                           </AvatarFallback>
@@ -174,8 +174,8 @@ export default function MyFeeds() {
                       className="mb-4 mt-4 shadow-sm  rounded-4xl"
                     >
                       <CardHeader className="flex  items-center px-3 sm:px-6">
-                        <Avatar className="h-6 w-6 rounded-full grayscale   mr-3 ">
-                          <AvatarImage alt="User Avatar" />
+                        <Avatar className="h-6 w-6 rounded-full    mr-3 ">
+                          <AvatarImage src={post.user?.profileImage} alt="User Avatar" />
                           <AvatarFallback className="rounded-full bg-gray-400 p-2 ">
                             CN
                           </AvatarFallback>
@@ -216,8 +216,8 @@ export default function MyFeeds() {
                       className="mb-4 mt-4 shadow-sm  rounded-4xl"
                     >
                       <CardHeader className="flex  items-center px-3 sm:px-6">
-                        <Avatar className="h-6 w-6 rounded-full grayscale   mr-3 ">
-                          <AvatarImage alt="User Avatar" />
+                        <Avatar className="h-6 w-6 rounded-full    mr-3 ">
+                          <AvatarImage src={post.user?.profileImage} alt="User Avatar" />
                           <AvatarFallback className="rounded-full bg-gray-400 p-2 ">
                             CN
                           </AvatarFallback>

@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/carousel";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { DialogTitle } from "@radix-ui/react-dialog";
+import { ScrollArea, ScrollBar } from "./ui/scroll-area";
 
 export function ImageCarousel({ postImages }: { postImages?: string[] }) {
   const [open, setOpen] = React.useState(false);
@@ -19,32 +20,25 @@ export function ImageCarousel({ postImages }: { postImages?: string[] }) {
   return (
     <div>
       {/* Small preview grid */}
-      <div
-        className={`grid  gap-2 ${postImages?.length === 0 ? "mb-0" : "mb-3"} ${
-          postImages?.length === 1
-            ? "grid-cols-1"
-            : postImages?.length === 2
-            ? "grid-cols-2"
-            : postImages?.length === 3
-            ? "grid-cols-3"
-            : "grid-cols-3"
-        }`}
-      >
-        {postImages?.map((src, index) => (
-          <Image
-            key={index}
-            src={src}
-            alt={`Image ${index + 1}`}
-            width={300}
-            height={300}
-            className="rounded-lg cursor-pointer object-cover"
-            onClick={() => {
-              setSelectedIndex(index);
-              setOpen(true);
-            }}
-          />
-        ))}
-      </div>
+      <ScrollArea className="">
+        <div className="flex w-max space-x-4 p-4">
+          {postImages?.map((src, index) => (
+            <Image
+              key={index}
+              src={src}
+              alt={`Image ${index + 1}`}
+              width={300}
+              height={300}
+              className="rounded-lg cursor-pointer object-cover"
+              onClick={() => {
+                setSelectedIndex(index);
+                setOpen(true);
+              }}
+            />
+          ))}
+        </div>
+           <ScrollBar orientation="horizontal" />
+      </ScrollArea>
 
       {/* Dialog Carousel when clicked */}
       <Dialog open={open} onOpenChange={setOpen}>

@@ -56,10 +56,13 @@ export const authOptions: AuthOptions = {
     secret: process.env.AUTH_SECRET,
   },
   callbacks: {
-    async jwt({ token, user, account }) {
+    async jwt({ token, user, account, trigger, session }) {
       try {
         if (user) {
           token.id = user.id;
+          token.name = user.name;
+          token.profileImage = user.profileImage;
+          token.bio = user.bio;
           // Use provider access token if available, otherwise generate your own
           token.accessToken =
             account?.access_token ||
@@ -68,6 +71,20 @@ export const authOptions: AuthOptions = {
               process.env.AUTH_SECRET!,
               { expiresIn: "7d" }
             );
+        }
+
+        // ✅ Handle manual session updates
+        if (trigger === "update" && session) {
+          // Merge the updated session data
+          if (session.user.name !== undefined) {
+            token.name = session.user.name; // ✅ Update name
+          }
+          if (session.user?.profileImage) {
+            token.profileImage = session.user.profileImage;
+          }
+          if (session.user?.bio) {
+            token.bio = session.user.bio;
+          }
         }
         return token;
       } catch (error) {
@@ -80,6 +97,9 @@ export const authOptions: AuthOptions = {
       try {
         if (session.user && token.id) {
           session.user.id = token.id;
+          session.user.name = token.name;
+          session.user.profileImage = token.profileImage;
+          session.user.bio = token.bio;
         }
 
         if (token.accessToken) {
@@ -93,7 +113,7 @@ export const authOptions: AuthOptions = {
       }
     },
   },
-   pages: {
+  pages: {
     signIn: "/auth/signin",
     error: "/auth/error",
   },

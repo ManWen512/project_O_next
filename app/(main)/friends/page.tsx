@@ -199,7 +199,7 @@ export default function Friends() {
                             f.requester._id === user._id)
                       );
                       return (
-                        <CommandItem className="p-1 mb-2 " key={user._id}>
+                        <CommandItem className="p-1 mb-0 " key={user._id}>
                           <Card
                             key={user._id}
                             className="  w-full py-3 px-2 "
@@ -208,7 +208,7 @@ export default function Friends() {
                             <div className="flex justify-between items-center">
                               <div className="flex items-center gap-3">
                                 <Avatar className="h-8 w-8   rounded-full ">
-                                  <AvatarImage alt="User Avatar" />
+                                  <AvatarImage src={user?.profileImage} alt="User Avatar" />
                                   <AvatarFallback className="rounded-full bg-gray-400  ">
                                     CN
                                   </AvatarFallback>
@@ -218,7 +218,7 @@ export default function Friends() {
                                     {user.name}
                                   </span>
                                   <CardDescription className="text-xs">
-                                    {user.email}
+                                    {user.bio}
                                   </CardDescription>
                                 </div>
                               </div>
@@ -272,7 +272,7 @@ export default function Friends() {
                     <div className="flex justify-between items-center">
                       <div className="flex items-center gap-3">
                         <Avatar className="h-8 w-8   rounded-full ">
-                          <AvatarImage alt="User Avatar" />
+                          <AvatarImage src={p.requester?.profileImage} alt="User Avatar" />
                           <AvatarFallback className="rounded-full bg-gray-400  ">
                             CN
                           </AvatarFallback>
@@ -283,7 +283,7 @@ export default function Friends() {
                             {p.requester.name}
                           </span>
                           <CardDescription className="text-xs">
-                            {p.requester.email}
+                            {p.requester.bio}
                           </CardDescription>
                         </div>
                       </div>
@@ -337,7 +337,7 @@ export default function Friends() {
                     <>
                       <Card className="relative  w-full h-40 bg-gray-100 mb-6">
                         <Avatar className="absolute -bottom-9 left-6 h-18 w-18  rounded-full ">
-                          <AvatarImage alt="User Avatar" />
+                          <AvatarImage src={userById?.profileImage} alt="User Avatar" />
                           <AvatarFallback className="rounded-full bg-gray-400  ">
                             CN
                           </AvatarFallback>
@@ -364,7 +364,7 @@ export default function Friends() {
                 <>
                   <Card className="relative  w-full h-40 bg-gray-100">
                     <Avatar className="absolute -bottom-9 left-10 h-18 w-18  rounded-full ">
-                      <AvatarImage alt="User Avatar" />
+                      <AvatarImage src={userById?.profileImage} alt="User Avatar" />
                       <AvatarFallback className="rounded-full bg-gray-400  ">
                         CN
                       </AvatarFallback>

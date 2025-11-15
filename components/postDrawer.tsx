@@ -106,7 +106,7 @@ const PostDrawer = () => {
         className={`fixed inset-x-0 bottom-0 xl:mx-auto md:ml-64 2xl:ml-76 pt-2 md:w-xl xl:w-2xl 2xl:w-4xl  max-w-6xl z-50 flex flex-col bg-white border-t border-gray-200 rounded-t-2xl  shadow-2xl transition-all ease-in-out duration-400 ${
           open
             ? "h-[70vh] sm:h-[75vh] "
-            : "h-[22vh] md:h-[10vh] xl:h-[22vh] overflow-hidden"
+            : "h-[20vh] md:h-[10vh] xl:h-[22vh] overflow-hidden"
         }`}
       >
         <ScrollArea className={`${open ? "overflow-auto" : ""} `}>
@@ -243,7 +243,7 @@ const PostDrawer = () => {
                 </Button>
                 <Button
                   onClick={handleSubmit}
-                  disabled={!inputValue && images.length === 0}
+                  disabled={(!inputValue && images.length === 0) || isLoading}
                 >
                 {isLoading ? (<><Spinner/>Posting...</>) : "Post"} <CircleCheckBig className="ml-2" />
                 </Button>

@@ -8,6 +8,7 @@ export type Post = {
     _id: string;
     name: string;
     email: string;
+    profileImage: string;
   };
   image?: string[];
   tags?: string[];

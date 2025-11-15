@@ -4,6 +4,8 @@ interface Friends {
   _id: string; // maps from _id
   name: string;
   email: string;
+  profileImage: string;
+  bio: string;
   emailVerified: string;
   isVerified: boolean;
   friends: string[];
@@ -11,11 +13,15 @@ interface Friends {
   requester: {
     _id: string | undefined;
     name: string;
-    email:string;
+    email: string;
+    profileImage: string;
+    bio: string;
   };
   recipient: {
     _id: string;
     name: string;
+    profileImage: string;
+    bio: string;
   };
 }
 

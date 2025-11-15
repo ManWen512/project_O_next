@@ -25,6 +25,8 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { signOut } from "next-auth/react";
+import Link from "next/link";
+import { Orbit } from "lucide-react";
 
 export function NavUser({
   user,
@@ -33,7 +35,7 @@ export function NavUser({
     id: string;
     name: string;
     email: string;
-    image?: string;
+    profileImage?: string;
   };
 }) {
   const { isMobile } = useSidebar();
@@ -42,8 +44,8 @@ export function NavUser({
     <SidebarMenu>
       <SidebarMenuItem>
         <div className="flex items-center justify-center mb-3">
-          <Avatar className="h-18 w-18 rounded-full grayscale ">
-            <AvatarImage src={user?.image} alt={user?.name} />
+          <Avatar className="h-18 w-18 rounded-full ">
+            <AvatarImage src={user?.profileImage} alt={user?.name} />
             <AvatarFallback className="rounded-lg">CN</AvatarFallback>
           </Avatar>
         </div>
@@ -71,7 +73,7 @@ export function NavUser({
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user?.image} alt={user?.name} />
+                  <AvatarImage src={user?.profileImage} alt={user?.name} />
                   <AvatarFallback className="rounded-lg">CN</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
@@ -84,15 +86,17 @@ export function NavUser({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <IconUserCircle />
-                Account
-              </DropdownMenuItem>
-              <DropdownMenuItem>
+              <Link href="/profile">
+                <DropdownMenuItem className="py-2">
+                  <Orbit className="text-[#F66435]" />
+                  Profile
+                </DropdownMenuItem>
+              </Link>
+              <DropdownMenuItem className="py-2">
                 <IconCreditCard />
                 Billing
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem className="py-2">
                 <IconNotification />
                 Notifications
               </DropdownMenuItem>
@@ -100,8 +104,9 @@ export function NavUser({
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => signOut({ callbackUrl: "/login" })}
+              className="py-2"
             >
-              <IconLogout />
+              <IconLogout className="text-[#F66435]" />
               Log out
             </DropdownMenuItem>
           </DropdownMenuContent>
