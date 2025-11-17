@@ -22,7 +22,9 @@ export default function Feeds() {
             />
           </div>
           <Posts />
-          <PostDrawer />
+         <div className="relative">
+            <PostDrawer />
+          </div>
         </div>
         <div className="hidden sm:block col-span-1 sticky top-6 mr-5  h-fit">
           <Suggestions />

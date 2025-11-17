@@ -83,6 +83,9 @@ const PostDrawer = () => {
       toast.error("You must be logged in!");
       return;
     }
+    setOpen(false);
+    // Show spinner BEFORE API call
+    const toastId = toast.loading("Uploading...");
 
     const formData = new FormData();
     formData.append("content", inputValue);
@@ -92,22 +95,24 @@ const PostDrawer = () => {
 
     await addPost(formData).unwrap();
 
+    toast.dismiss(toastId);
     toast.success("Post created successfully!");
     setInputValue("");
     setImages([]);
     setPreviews([]);
-    setOpen(false);
   };
 
   return (
     <div className="">
       {/* Drawer Implementation */}
       <div
-        className={`fixed inset-x-0 bottom-0 xl:mx-auto md:ml-64 2xl:ml-76 pt-2 md:w-xl xl:w-2xl 2xl:w-4xl  max-w-6xl z-50 flex flex-col bg-white border-t border-gray-200 rounded-t-2xl  shadow-2xl transition-all ease-in-out duration-400 ${
-          open
-            ? "h-[70vh] sm:h-[75vh] "
-            : "h-[20vh] md:h-[10vh] xl:h-[22vh] overflow-hidden"
-        }`}
+        className={`
+        fixed bottom-0 left-1/2 transform -translate-x-1/2
+        w-full sm:w-[calc(100%-4rem)]   max-w-3xl                       
+       bg-white border-t border-gray-200 rounded-t-2xl shadow-2xl
+        z-50 transition-all duration-300 ease-in-out
+    ${open ? "h-[70vh] sm:h-[75vh]" : "h-[20vh] md:h-[10vh] xl:h-[22vh] overflow-hidden"}
+  `}
       >
         <ScrollArea className={`${open ? "overflow-auto" : ""} `}>
           {/* Drawer Handle */}
@@ -245,7 +250,7 @@ const PostDrawer = () => {
                   onClick={handleSubmit}
                   disabled={(!inputValue && images.length === 0) || isLoading}
                 >
-                {isLoading ? (<><Spinner/>Posting...</>) : "Post"} <CircleCheckBig className="ml-2" />
+                  Post <CircleCheckBig className="ml-2" />
                 </Button>
               </div>
             </div>

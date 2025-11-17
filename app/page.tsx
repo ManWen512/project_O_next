@@ -17,7 +17,7 @@ export default function Home() {
         />
       </div>
       <video
-        src="/jkzd2030.mp4" // or a remote URL
+        src="/JKZD2030.mp4" // or a remote URL
         autoPlay // start automatically
         loop // repeat continuously
         muted // required for autoplay in most browsers

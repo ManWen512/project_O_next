@@ -141,6 +141,10 @@ export default function Friends() {
     return alreadyFriend?.some((friend) => friend._id === userId);
   };
 
+  const filteredUsers = searchUsers?.filter(
+    (user) => user._id !== session?.user?.id
+  );
+
   return (
     <div className=" my-4">
       <div className="grid grid-cols-5 gap-4 sm:mx-15">
@@ -190,7 +194,7 @@ export default function Friends() {
 
                 <ScrollArea className="h-[70vh]">
                   <CommandGroup>
-                    {searchUsers?.map((user) => {
+                    {filteredUsers?.map((user) => {
                       const isPending = allPendingUsers?.some(
                         (f) =>
                           (f.requester._id === session?.user.id &&
@@ -208,7 +212,10 @@ export default function Friends() {
                             <div className="flex justify-between items-center">
                               <div className="flex items-center gap-3">
                                 <Avatar className="h-8 w-8   rounded-full ">
-                                  <AvatarImage src={user?.profileImage} alt="User Avatar" />
+                                  <AvatarImage
+                                    src={user?.profileImage}
+                                    alt="User Avatar"
+                                  />
                                   <AvatarFallback className="rounded-full bg-gray-400  ">
                                     CN
                                   </AvatarFallback>
@@ -272,7 +279,10 @@ export default function Friends() {
                     <div className="flex justify-between items-center">
                       <div className="flex items-center gap-3">
                         <Avatar className="h-8 w-8   rounded-full ">
-                          <AvatarImage src={p.requester?.profileImage} alt="User Avatar" />
+                          <AvatarImage
+                            src={p.requester?.profileImage}
+                            alt="User Avatar"
+                          />
                           <AvatarFallback className="rounded-full bg-gray-400  ">
                             CN
                           </AvatarFallback>
@@ -337,7 +347,10 @@ export default function Friends() {
                     <>
                       <Card className="relative  w-full h-40 bg-gray-100 mb-6">
                         <Avatar className="absolute -bottom-9 left-6 h-18 w-18  rounded-full ">
-                          <AvatarImage src={userById?.profileImage} alt="User Avatar" />
+                          <AvatarImage
+                            src={userById?.profileImage}
+                            alt="User Avatar"
+                          />
                           <AvatarFallback className="rounded-full bg-gray-400  ">
                             CN
                           </AvatarFallback>
@@ -364,7 +377,10 @@ export default function Friends() {
                 <>
                   <Card className="relative  w-full h-40 bg-gray-100">
                     <Avatar className="absolute -bottom-9 left-10 h-18 w-18  rounded-full ">
-                      <AvatarImage src={userById?.profileImage} alt="User Avatar" />
+                      <AvatarImage
+                        src={userById?.profileImage}
+                        alt="User Avatar"
+                      />
                       <AvatarFallback className="rounded-full bg-gray-400  ">
                         CN
                       </AvatarFallback>

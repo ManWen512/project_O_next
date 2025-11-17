@@ -59,7 +59,7 @@ const data = {
     },
     {
       title: "Settings",
-      url: "#",
+      url: "/setting",
       icon: IconSettings,
     },
     {
@@ -104,7 +104,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent >
         <NavMain items={data.navMain} />
       </SidebarContent>
-      <SidebarFooter>
+      <SidebarFooter >
         <NavUser user={session?.user as User} />
       </SidebarFooter>
     </Sidebar>
