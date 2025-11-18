@@ -13,16 +13,46 @@ import {
 } from "@/components/ui/card";
 import { useEffect, useState } from "react";
 import { ImageCarousel } from "@/components/imageCarousel";
-import { Earth, LockKeyhole, Newspaper, Search } from "lucide-react";
+import {
+  CircleSlash2,
+  CircleSmall,
+  Earth,
+  LockKeyhole,
+  Newspaper,
+  Search,
+} from "lucide-react";
 import { useSession } from "next-auth/react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import {
+  useDeletePostMutation,
   useGetPrivatePostsQuery,
   useGetPublicPostsQuery,
   useGetUserPostsQuery,
 } from "@/services/post";
 import Profile from "@/components/profile";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuShortcut,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { Spinner } from "@/components/ui/spinner";
 
 interface Post {
   _id: string;
@@ -37,6 +67,14 @@ interface Post {
   visibility?: "public" | "private";
   createdAt: string;
   updatedAt: string;
+}
+
+interface User {
+  _id: string;
+  name: string;
+  email: string;
+  profileImage: string;
+  bio: string;
 }
 
 function timeAgo(dateString: string): string {
@@ -55,37 +93,39 @@ function timeAgo(dateString: string): string {
 
 export default function MyFeeds() {
   const { data: session, status } = useSession();
-  const userId = session?.user?.id;
+  const [open, setOpen] = useState(false);
+  const [deletePost, { isLoading }] = useDeletePostMutation();
+  const [currentPostId, setCurrentPostId] = useState<string>("");
+
   const {
     data: posts,
     isLoading: postsloading,
     error: postsError,
-  } = useGetUserPostsQuery(
-    session?.user?.id!, // Use non-null assertion since we're using skip
-    {
-      skip: status !== "authenticated" || !session?.user?.id,
-    }
-  );
+  } = useGetUserPostsQuery();
   const {
     data: privatePosts,
     isLoading: privateLoading,
     error: privateError,
-  } = useGetPrivatePostsQuery(
-    session?.user?.id!, // Use non-null assertion since we're using skip
-    {
-      skip: status !== "authenticated" || !session?.user?.id,
-    }
-  );
+  } = useGetPrivatePostsQuery();
   const {
     data: publicPosts,
     isLoading: publicLoading,
     error: publicError,
-  } = useGetPublicPostsQuery(
-    session?.user?.id!, // Use non-null assertion since we're using skip
-    {
-      skip: status !== "authenticated" || !session?.user?.id,
+  } = useGetPublicPostsQuery();
+
+  if (status === "loading") return null; // or a loader/spinner
+
+  if (!session?.user) return null;
+
+  const handleDelete = async (postId: string) => {
+    try {
+      await deletePost(postId).unwrap();
+      toast.success("Post Deleted Successfully!");
+      setOpen(false);
+    } catch (err) {
+      console.error("Delete failed", err);
     }
-  );
+  };
 
   return (
     <div>
@@ -130,11 +170,14 @@ export default function MyFeeds() {
                   posts?.map((post) => (
                     <Card
                       key={post._id}
-                      className="mb-4 mt-4 shadow-sm  rounded-4xl"
+                      className="relative mb-4 mt-4 shadow-sm  rounded-4xl"
                     >
                       <CardHeader className="flex  items-center px-3 sm:px-6">
                         <Avatar className="h-6 w-6 rounded-full    mr-3 ">
-                          <AvatarImage src={post.user?.profileImage} alt="User Avatar" />
+                          <AvatarImage
+                            src={post.user?.profileImage}
+                            alt="User Avatar"
+                          />
                           <AvatarFallback className="rounded-full bg-gray-400 p-2 ">
                             CN
                           </AvatarFallback>
@@ -160,6 +203,28 @@ export default function MyFeeds() {
                           {post?.content}
                         </div>
                       </CardContent>
+                      <div className="absolute top-6 right-6  ">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <CircleSmall />
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent className="w-56" align="end">
+                            <DropdownMenuGroup>
+                              <DropdownMenuItem>Profile</DropdownMenuItem>
+                              <DropdownMenuItem>Billing</DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  setCurrentPostId(post._id);
+                                  setOpen(true);
+                                }}
+                              >
+                                <CircleSlash2 className="text-[#F66435]" />
+                                Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuGroup>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </Card>
                   ))
                 )}
@@ -171,11 +236,14 @@ export default function MyFeeds() {
                   publicPosts?.map((post) => (
                     <Card
                       key={post._id}
-                      className="mb-4 mt-4 shadow-sm  rounded-4xl"
+                      className="relative mb-4 mt-4 shadow-sm  rounded-4xl"
                     >
                       <CardHeader className="flex  items-center px-3 sm:px-6">
                         <Avatar className="h-6 w-6 rounded-full    mr-3 ">
-                          <AvatarImage src={post.user?.profileImage} alt="User Avatar" />
+                          <AvatarImage
+                            src={post.user?.profileImage}
+                            alt="User Avatar"
+                          />
                           <AvatarFallback className="rounded-full bg-gray-400 p-2 ">
                             CN
                           </AvatarFallback>
@@ -201,6 +269,28 @@ export default function MyFeeds() {
                           {post?.content}
                         </div>
                       </CardContent>
+                      <div className="absolute top-6 right-6  ">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <CircleSmall />
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent className="w-56" align="end">
+                            <DropdownMenuGroup>
+                              <DropdownMenuItem>Profile</DropdownMenuItem>
+                              <DropdownMenuItem>Billing</DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  setCurrentPostId(post._id);
+                                  setOpen(true);
+                                }}
+                              >
+                                <CircleSlash2 className="text-[#F66435]" />
+                                Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuGroup>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </Card>
                   ))
                 )}
@@ -213,11 +303,14 @@ export default function MyFeeds() {
                   privatePosts?.map((post) => (
                     <Card
                       key={post._id}
-                      className="mb-4 mt-4 shadow-sm  rounded-4xl"
+                      className="relative mb-4 mt-4 shadow-sm  rounded-4xl"
                     >
                       <CardHeader className="flex  items-center px-3 sm:px-6">
                         <Avatar className="h-6 w-6 rounded-full    mr-3 ">
-                          <AvatarImage src={post.user?.profileImage} alt="User Avatar" />
+                          <AvatarImage
+                            src={post.user?.profileImage}
+                            alt="User Avatar"
+                          />
                           <AvatarFallback className="rounded-full bg-gray-400 p-2 ">
                             CN
                           </AvatarFallback>
@@ -243,16 +336,65 @@ export default function MyFeeds() {
                           {post?.content}
                         </div>
                       </CardContent>
+                      <div className="absolute top-6 right-6  ">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <CircleSmall />
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent className="w-56" align="end">
+                            <DropdownMenuGroup>
+                              <DropdownMenuItem>Profile</DropdownMenuItem>
+                              <DropdownMenuItem>Billing</DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  setCurrentPostId(post._id);
+                                  setOpen(true);
+                                }}
+                              >
+                                <CircleSlash2 className="text-[#F66435]" />
+                                Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuGroup>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </Card>
                   ))
                 )}
               </TabsContent>
             </Tabs>
           </div>
+
           <div className="hidden sm:block col-span-1 sticky top-6 mr-5 pt-4 h-fit">
-            <Profile />
+            <Profile user={session!.user} />
           </div>
         </div>
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Delete Post</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete this post?
+              </DialogDescription>
+            </DialogHeader>
+
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button variant="outline">Cancel</Button>
+              </DialogClose>
+              <Button
+                onClick={() => handleDelete(currentPostId)}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                 <> <Spinner className="animate-spin w-4 h-4" /> Confirming</>
+                ) : (
+                  "Confirm"
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

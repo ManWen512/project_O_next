@@ -1,4 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { getSession } from "next-auth/react";
+import type { Post } from "./post";
 
 interface Friends {
   _id: string; // maps from _id
@@ -23,6 +25,14 @@ interface Friends {
     profileImage: string;
     bio: string;
   };
+  user: {
+    _id: string;
+    name: string;
+    email: string;
+    bio: string;
+    profileImage: string;
+  };
+  posts: Post[];
 }
 
 interface CreateFriendRequest {
@@ -33,7 +43,20 @@ interface CreateFriendRequest {
 // Create post slice
 export const friendsApi = createApi({
   reducerPath: "friendsApi", // unique key for the reducer
-  baseQuery: fetchBaseQuery({ baseUrl: process.env.NEXT_PUBLIC_BACKEND_URL }),
+  baseQuery: fetchBaseQuery({
+    baseUrl: process.env.NEXT_PUBLIC_BACKEND_URL,
+    prepareHeaders: async (headers) => {
+      // Get the NextAuth session
+      const session = await getSession();
+
+      // If session has accessToken, add it to Authorization header
+      if (session?.accessToken) {
+        headers.set("authorization", `Bearer ${session.accessToken}`);
+      }
+
+      return headers;
+    },
+  }),
   tagTypes: ["Friend"],
   endpoints: (builder) => ({
     //GET Friends
@@ -47,13 +70,13 @@ export const friendsApi = createApi({
       providesTags: ["Friend"],
     }),
     //GET pending Friends
-    getPendingFriends: builder.query<Friends[], string>({
-      query: (id) => `friends/pending/${id}`,
+    getPendingFriends: builder.query<Friends[], void>({
+      query: () => `friends/pending`,
       providesTags: ["Friend"],
     }),
     //GET pending Friends
-    getAllPendingFriends: builder.query<Friends[], string>({
-      query: (id) => `friends/allpending/${id}`,
+    getAllPendingFriends: builder.query<Friends[], void>({
+      query: () => `friends/allpending`,
       providesTags: ["Friend"],
     }),
     //GET Friends lists

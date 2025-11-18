@@ -79,10 +79,6 @@ const PostDrawer = () => {
   };
 
   const handleSubmit = async () => {
-    if (!userId) {
-      toast.error("You must be logged in!");
-      return;
-    }
     setOpen(false);
     // Show spinner BEFORE API call
     const toastId = toast.loading("Uploading...");
@@ -90,7 +86,6 @@ const PostDrawer = () => {
     const formData = new FormData();
     formData.append("content", inputValue);
     formData.append("visibility", visibility);
-    formData.append("userId", userId);
     images.forEach((file) => formData.append("image", file));
 
     await addPost(formData).unwrap();

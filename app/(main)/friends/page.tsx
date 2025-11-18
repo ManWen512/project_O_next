@@ -49,6 +49,7 @@ import {
   useRejectFriendsMutation,
   useGetAllPendingFriendsQuery,
 } from "@/services/friends";
+import Profile from "@/components/profile";
 
 interface Friends {
   _id: string; // maps from _id
@@ -70,9 +71,7 @@ export default function Friends() {
   const requesterId = session?.user.id;
   const isMobile = useMediaQuery("(max-width: 640px)");
   const { data: searchUsers } = useGetFriendsQuery();
-  const { data: pendingUsers } = useGetPendingFriendsQuery(session?.user?.id!, {
-    skip: status !== "authenticated" || !session?.user?.id,
-  });
+  const { data: pendingUsers } = useGetPendingFriendsQuery();
   const { data: alreadyFriend } = useGetFriendsListsQuery(session?.user?.id!, {
     skip: status !== "authenticated" || !session?.user?.id,
   });
@@ -82,12 +81,8 @@ export default function Friends() {
   const { data: userById } = useGetFriendByIdQuery(selectedUserId, {
     skip: !selectedUserId, // Only fetch when selectedUserId exists
   });
-  const { data: allPendingUsers } = useGetAllPendingFriendsQuery(
-    session?.user?.id!,
-    {
-      skip: status !== "authenticated" || !session?.user?.id,
-    }
-  );
+
+  const { data: allPendingUsers } = useGetAllPendingFriendsQuery();
   const [newFriend] = useAddFriendsMutation();
   const [acceptFriend] = useAcceptFriendsMutation();
   const [rejectFriend] = useRejectFriendsMutation();
@@ -145,12 +140,16 @@ export default function Friends() {
     (user) => user._id !== session?.user?.id
   );
 
+  const formattedUser = userById?.user
+    ? { ...userById.user, id: userById.user._id }
+    : undefined;
+
   return (
     <div className=" my-4">
-      <div className="grid grid-cols-5 gap-4 sm:mx-15">
+      <div className="grid grid-cols-4 gap-2">
         <Tabs
           defaultValue="searchFriends"
-          className="mb-4 sm:col-span-3 col-span-5 mx-4 "
+          className="mb-4 sm:col-span-3 col-span-4 sm:mx-15  "
         >
           <div className="flex justify-between">
             <div className="">
@@ -343,64 +342,14 @@ export default function Friends() {
             <Sheet open={sideCol} onOpenChange={setSideCol}>
               <SheetContent className="p-2">
                 <SheetHeader className="p-4">
-                  {userById && (
-                    <>
-                      <Card className="relative  w-full h-40 bg-gray-100 mb-6">
-                        <Avatar className="absolute -bottom-9 left-6 h-18 w-18  rounded-full ">
-                          <AvatarImage
-                            src={userById?.profileImage}
-                            alt="User Avatar"
-                          />
-                          <AvatarFallback className="rounded-full bg-gray-400  ">
-                            CN
-                          </AvatarFallback>
-                        </Avatar>
-                      </Card>
-                      <SheetTitle className="mt-4 text-2xl ">
-                        {userById?.name}
-                      </SheetTitle>
-                      <SheetDescription className="">
-                        {userById?.email}
-                      </SheetDescription>
-                      Friends:
-                      {userFriend?.map((friend) => (
-                        <div key={friend._id}>{friend.name}</div>
-                      ))}
-                    </>
-                  )}
+                  {formattedUser && <Profile user={formattedUser} />}
                 </SheetHeader>
               </SheetContent>
             </Sheet>
           ) : (
-            <Card className="w-full col-span-2 flex p-2  ">
-              {userById && (
-                <>
-                  <Card className="relative  w-full h-40 bg-gray-100">
-                    <Avatar className="absolute -bottom-9 left-10 h-18 w-18  rounded-full ">
-                      <AvatarImage
-                        src={userById?.profileImage}
-                        alt="User Avatar"
-                      />
-                      <AvatarFallback className="rounded-full bg-gray-400  ">
-                        CN
-                      </AvatarFallback>
-                    </Avatar>
-                  </Card>
-                  <div className="p-4">
-                    <CardTitle className="mt-4 text-2xl ">
-                      {userById.name}
-                    </CardTitle>
-                    <CardDescription className="">
-                      {userById.email}
-                    </CardDescription>
-                    Friends:
-                    {userFriend?.map((friend) => (
-                      <div key={friend._id}>{friend.name}</div>
-                    ))}
-                  </div>
-                </>
-              )}
-            </Card>
+           <div className="hidden sm:block col-span-1 sticky top-6 mr-5 pt-4 h-fit">
+              {formattedUser && <Profile user={formattedUser} />}
+            </div>
           ))}
       </div>
     </div>

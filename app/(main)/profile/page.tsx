@@ -5,7 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { CircleSlash2, CircleSmall, ImagePlus, Loader2, Orbit, SquarePen } from "lucide-react";
+import {
+  CircleSlash2,
+  CircleSmall,
+  ImagePlus,
+  Loader2,
+  Orbit,
+  SquarePen,
+} from "lucide-react";
 import {
   Dialog,
   DialogClose,
@@ -39,7 +46,6 @@ import { useGetUserPostsQuery } from "@/services/post";
 
 export default function ProfilePage() {
   const { data: session, status, update } = useSession();
-  const userId = session?.user?.id;
 
   const { data: alreadyFriend } = useGetFriendsListsQuery(session?.user?.id!, {
     skip: status !== "authenticated" || !session?.user?.id,
@@ -50,9 +56,7 @@ export default function ProfilePage() {
   const [updateUser, { isLoading: isUpdatingProfile }] =
     useUpdateUserMutation();
 
-  const { data: posts } = useGetUserPostsQuery(session?.user?.id!, {
-    skip: status !== "authenticated" || !session?.user?.id,
-  });
+  const { data: posts } = useGetUserPostsQuery();
 
   // Separate preview states for outside and inside dialog
   const [outsidePreviewUrl, setOutsidePreviewUrl] = useState<string>("");
@@ -96,11 +100,6 @@ export default function ProfilePage() {
   const handleInstantUpload = async (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
-    if (!userId) {
-      toast.error("You must be logged in!");
-      return;
-    }
-
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -125,7 +124,6 @@ export default function ProfilePage() {
     try {
       const formData = new FormData();
       formData.append("profileImage", file);
-      formData.append("userId", userId);
 
       const result = await uploadProfile(formData).unwrap();
 
@@ -186,11 +184,6 @@ export default function ProfilePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!userId) {
-      toast.error("You must be logged in!");
-      return;
-    }
-
     if (!formData.name.trim()) {
       toast.error("Name is required");
       return;
@@ -203,7 +196,6 @@ export default function ProfilePage() {
       if (selectedDialogFile) {
         const imageFormData = new FormData();
         imageFormData.append("profileImage", selectedDialogFile);
-        imageFormData.append("userId", userId);
 
         const imageResult = await uploadProfile(imageFormData).unwrap();
         newProfileImage = imageResult.profileImage;
@@ -220,7 +212,7 @@ export default function ProfilePage() {
         if (formData.name !== session?.user?.name) updates.name = formData.name;
         if (formData.bio !== session?.user?.bio) updates.bio = formData.bio;
 
-        await updateUser({ userId, data: updates }).unwrap();
+        await updateUser({ data: updates }).unwrap();
         console.log("Profile updated");
       }
 
@@ -354,10 +346,20 @@ export default function ProfilePage() {
                               <DropdownMenuTrigger asChild>
                                 <CircleSmall />
                               </DropdownMenuTrigger>
-                              <DropdownMenuContent className="w-56 " align="end">
+                              <DropdownMenuContent
+                                className="w-56 "
+                                align="end"
+                              >
                                 <DropdownMenuGroup>
-                                  <DropdownMenuItem className="py-2"><Orbit className="w-3 h-3 text-[#F66435]"/>Profile</DropdownMenuItem>
-                                  <DropdownMenuItem className="py-2"> <CircleSlash2 className="text-[#F66435]" />UnFriend</DropdownMenuItem>
+                                  <DropdownMenuItem className="py-2">
+                                    <Orbit className="w-3 h-3 text-[#F66435]" />
+                                    Profile
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem className="py-2">
+                                    {" "}
+                                    <CircleSlash2 className="text-[#F66435]" />
+                                    UnFriend
+                                  </DropdownMenuItem>
                                 </DropdownMenuGroup>
                               </DropdownMenuContent>
                             </DropdownMenu>

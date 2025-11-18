@@ -4,6 +4,8 @@ import { Heart, NotebookPen } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useLikePostMutation } from "@/services/post";
+import { useSession } from "next-auth/react";
+
 
 interface PostProps {
   _id: string;
@@ -11,17 +13,16 @@ interface PostProps {
   currentUserId?: string; // array of userIds
 }
 
-export function PostCard({ _id, likes, currentUserId }: PostProps) {
+export function PostCard({ _id, likes }: PostProps) {
+  const { data: session, status } = useSession();
+  const currentUserId = session?.user?.id;
   const [likePost] = useLikePostMutation();
 
   const handleLike = async () => {
-    if (!currentUserId) return;
+   
     try {
       // Use RTK Query mutation - it will automatically update the cache
-      await likePost({
-        postId: _id,
-        userId: currentUserId,
-      }).unwrap();
+      await likePost(_id).unwrap();
     } catch (err) {
       console.error(err);
       toast.error("Failed to update like");

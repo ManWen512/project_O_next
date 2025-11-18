@@ -1,7 +1,8 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { getSession } from "next-auth/react";
 
 interface User {
-    profileImage:string;
+  profileImage: string;
 }
 
 interface UpdateUserResponse {
@@ -11,17 +12,28 @@ interface UpdateUserResponse {
 }
 
 interface UpdateUserRequest {
-  userId: string;
   data: {
     name?: string;
     bio?: string;
   };
 }
 
-
 export const userApi = createApi({
   reducerPath: "userApi", // unique key for the reducer
-  baseQuery: fetchBaseQuery({ baseUrl: process.env.NEXT_PUBLIC_BACKEND_URL }),
+  baseQuery: fetchBaseQuery({
+    baseUrl: process.env.NEXT_PUBLIC_BACKEND_URL,
+    prepareHeaders: async (headers) => {
+      // Get the NextAuth session
+      const session = await getSession();
+
+      // If session has accessToken, add it to Authorization header
+      if (session?.accessToken) {
+        headers.set("authorization", `Bearer ${session.accessToken}`);
+      }
+
+      return headers;
+    },
+  }),
   tagTypes: ["User"],
   endpoints: (builder) => ({
     uploadProfile: builder.mutation<User, FormData>({
@@ -34,8 +46,8 @@ export const userApi = createApi({
     }),
 
     updateUser: builder.mutation<UpdateUserResponse, UpdateUserRequest>({
-      query: ({ userId, data }) => ({
-        url: `users/updateUser/${userId}`,
+      query: (data ) => ({
+        url: `users/updateUser`,
         method: "PUT",
         body: data,
       }),
@@ -44,4 +56,4 @@ export const userApi = createApi({
   }),
 });
 
-export const { useUploadProfileMutation, useUpdateUserMutation} = userApi;
+export const { useUploadProfileMutation, useUpdateUserMutation } = userApi;

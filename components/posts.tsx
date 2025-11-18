@@ -32,6 +32,7 @@ import { Button } from "./ui/button";
 import { PostCard } from "./postCard";
 import { useSession } from "next-auth/react";
 import { useGetPostsQuery } from "@/services/post";
+import Link from "next/link";
 
 interface Post {
   _id: string;
@@ -64,11 +65,8 @@ function timeAgo(dateString: string): string {
 }
 
 export default function Posts() {
-  const { data: session, status } = useSession();
-  const currentUserId = session?.user?.id;
+   const { data: session } = useSession();
   const { data: posts, isLoading, error } = useGetPostsQuery();
-
-
 
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error loading posts</div>;
@@ -86,18 +84,26 @@ export default function Posts() {
         <Card key={post._id} className="relative  mt-4 shadow-sm  rounded-4xl">
           <div className="">
             <CardHeader className="flex  items-center px-3 sm:px-6">
-              <Avatar className="h-6 w-6 rounded-full  mr-3 ">
-                <AvatarImage src={post.user?.profileImage} alt="User Avatar" />
-                <AvatarFallback className="rounded-full bg-gray-400 p-2 ">
+              <Avatar className="h-8 w-8 rounded-full  overflow-hidden">
+                <AvatarImage src={post.user?.profileImage} alt="User Avatar" className="" />
+                <AvatarFallback className="rounded-full bg-gray-400">
                   CN
                 </AvatarFallback>
               </Avatar>
               <div>
-                <CardTitle className="ml-2 text-sm font-medium ">
-                  {post.user?.name}
-                </CardTitle>
+                <Link
+                  href={
+                    post.user?._id === session?.user?.id
+                      ? "/profile" // ⭐ your own profile
+                      : `/profile/${post.user?._id}` // ⭐ other user's profile
+                  }
+                >
+                  <CardTitle className="ml-1 text-sm font-medium ">
+                    {post.user?.name}
+                  </CardTitle>
+                </Link>
 
-                <CardDescription className="ml-2 text-sm font-medium flex items-center ">
+                <CardDescription className="ml-1 text-sm font-medium flex items-center ">
                   {timeAgo(post.createdAt)}.
                   {post.visibility === "public" ? (
                     <Earth className="w-4 h-4 ml-2 mt-1" />
@@ -134,12 +140,7 @@ export default function Posts() {
             <div className="ml-2 text-sm font-medium whitespace-break-spaces">
               {post?.content}
             </div>
-            <PostCard
-              key={post._id}
-              _id={post._id}
-              likes={post?.likes}
-              currentUserId={currentUserId}
-            />
+            <PostCard key={post._id} _id={post._id} likes={post?.likes} />
           </CardContent>
         </Card>
       ))}

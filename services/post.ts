@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-
+import { getSession } from "next-auth/react";
 
 export type Post = {
   _id: string;
@@ -29,7 +29,20 @@ export type CreatePostRequest = {
 // Create post slice
 export const postApi = createApi({
   reducerPath: "postApi", // unique key for the reducer
-  baseQuery: fetchBaseQuery({ baseUrl: process.env.NEXT_PUBLIC_BACKEND_URL }),
+  baseQuery: fetchBaseQuery({
+    baseUrl: process.env.NEXT_PUBLIC_BACKEND_URL,
+    prepareHeaders: async (headers) => {
+      // Get the NextAuth session
+      const session = await getSession();
+
+      // If session has accessToken, add it to Authorization header
+      if (session?.accessToken) {
+        headers.set("authorization", `Bearer ${session.accessToken}`);
+      }
+
+      return headers;
+    },
+  }),
   tagTypes: ["Post"],
   endpoints: (builder) => ({
     //GET POSTS
@@ -48,32 +61,41 @@ export const postApi = createApi({
     }), // POST /posts
 
     // GET PUBLIC POSTS
-    getPublicPosts: builder.query<Post[], string>({
-      query: (userId) => `posts/public/user/${userId}`,
+    getPublicPosts: builder.query<Post[], void>({
+      query: () => `posts/public/post`,
       providesTags: ["Post"],
     }),
 
     // GET PRIVATE POSTS (user's private posts)
-    getPrivatePosts: builder.query<Post[], string>({
-      query: (userId) => `posts/private/user/${userId}`,
+    getPrivatePosts: builder.query<Post[], void>({
+      query: () => `posts/private/post`,
       providesTags: ["Post"],
     }),
 
     // GET USER'S POSTS (all posts by current user)
-    getUserPosts: builder.query<Post[], string>({
-      query: (userId) => `posts/user/${userId}`,
+    getUserPosts: builder.query<Post[], void>({
+      query: () => `posts/all/post`,
       providesTags: ["Post"],
     }),
 
-     // LIKE/UNLIKE POST
-    likePost: builder.mutation<Post, { postId: string; userId: string }>({
-      query: ({postId, userId}) => ({
-        url: `posts/${postId}/like`,
+    // LIKE/UNLIKE POST
+    likePost: builder.mutation<Post,  string >({
+      query: (postId) => ({
+        url: `posts/like/${postId}`,
         method: "POST",
-        body: {userId},
       }),
-      invalidatesTags: ['Post'],
+      invalidatesTags: ["Post"],
     }),
+
+    deletePost: builder.mutation<{ success: boolean; message: string }, string>(
+      {
+        query: (postId) => ({
+          url: `posts/${postId}`,
+          method: "DELETE",
+        }),
+        invalidatesTags: ["Post"],
+      }
+    ),
   }),
 });
 
@@ -85,4 +107,5 @@ export const {
   useGetPublicPostsQuery,
   useGetUserPostsQuery,
   useLikePostMutation,
+  useDeletePostMutation,
 } = postApi;

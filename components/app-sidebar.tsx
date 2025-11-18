@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/sidebar";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import { useGetPendingFriendsQuery } from "@/services/friends";
 
 type User = {
   id: string;
@@ -77,9 +78,18 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data: session } = useSession();
-  
+  const { data: pendingUsers } = useGetPendingFriendsQuery();
+
+  const pendingCount = pendingUsers?.length ?? 0;
+
+  const navWithNotifications = data.navMain.map((item) =>
+    item.title === "Friends"
+      ? { ...item, notification: pendingCount > 0 }
+      : item
+  );
+
   return (
-    <Sidebar collapsible="offcanvas" {...props} >
+    <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -101,10 +111,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-      <SidebarContent >
-        <NavMain items={data.navMain} />
+      <SidebarContent>
+        <NavMain items={navWithNotifications} />
       </SidebarContent>
-      <SidebarFooter >
+      <SidebarFooter>
         <NavUser user={session?.user as User} />
       </SidebarFooter>
     </Sidebar>
