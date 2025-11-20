@@ -36,7 +36,6 @@ interface Friends {
 }
 
 interface CreateFriendRequest {
-  requesterId: string;
   recipientId: string;
 }
 
@@ -109,6 +108,13 @@ export const friendsApi = createApi({
       }),
       invalidatesTags: ["Friend"],
     }),
+    unFriend: builder.mutation<Friends, string>({
+      query: (friendId) => ({
+        url: `friends/unfriend/${friendId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Friend"],
+    }),
   }),
 });
 
@@ -121,4 +127,5 @@ export const {
   useAcceptFriendsMutation,
   useRejectFriendsMutation,
   useGetAllPendingFriendsQuery,
+  useUnFriendMutation,
 } = friendsApi;

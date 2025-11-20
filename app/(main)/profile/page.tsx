@@ -35,7 +35,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useSession } from "next-auth/react";
-import { useGetFriendsListsQuery } from "@/services/friends";
+import {
+  useGetFriendsListsQuery,
+  useUnFriendMutation,
+} from "@/services/friends";
 import {
   useUploadProfileMutation,
   useUpdateUserMutation,
@@ -43,6 +46,7 @@ import {
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useGetUserPostsQuery } from "@/services/post";
+import { Spinner } from "@/components/ui/spinner";
 
 export default function ProfilePage() {
   const { data: session, status, update } = useSession();
@@ -57,6 +61,7 @@ export default function ProfilePage() {
     useUpdateUserMutation();
 
   const { data: posts } = useGetUserPostsQuery();
+  const [unfriend] = useUnFriendMutation();
 
   // Separate preview states for outside and inside dialog
   const [outsidePreviewUrl, setOutsidePreviewUrl] = useState<string>("");
@@ -234,6 +239,16 @@ export default function ProfilePage() {
     }
   };
 
+  const handleUnfriend = async (friendId?: string) => {
+    if (!friendId) return;
+    try {
+      await unfriend(friendId).unwrap();
+      toast.success("Unfriended Successfully!");
+    } catch (err) {
+      console.error("Delete failed", err);
+    }
+  };
+
   const isLoading = isUploadingImage || isUpdatingProfile;
 
   // Get current profile image with preview priority
@@ -321,50 +336,73 @@ export default function ProfilePage() {
                   {alreadyFriend && alreadyFriend?.length > 0 ? (
                     alreadyFriend?.map((friend) => (
                       <Card className="p-3" key={friend._id}>
-                        <div className="flex justify-between items-center">
-                          <div className="flex items-center gap-3">
-                            <Avatar className="h-8 w-8 rounded-full">
-                              <AvatarImage
-                                src={friend?.profileImage}
-                                alt="User Avatar"
-                              />
-                              <AvatarFallback className="rounded-full bg-gray-400">
-                                CN
-                              </AvatarFallback>
-                            </Avatar>
+                        <Dialog>
+                          <div className="flex justify-between items-center">
+                            <div className="flex items-center gap-3">
+                              <Avatar className="h-8 w-8 rounded-full">
+                                <AvatarImage
+                                  src={friend?.profileImage}
+                                  alt="User Avatar"
+                                />
+                                <AvatarFallback className="rounded-full bg-gray-400">
+                                  CN
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <span className="font-semibold">
+                                  {friend?.name}
+                                </span>
+                                <CardDescription className="text-xs">
+                                  {friend?.bio}
+                                </CardDescription>
+                              </div>
+                            </div>
                             <div>
-                              <span className="font-semibold">
-                                {friend?.name}
-                              </span>
-                              <CardDescription className="text-xs">
-                                {friend?.bio}
-                              </CardDescription>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <CircleSmall />
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent
+                                  className="w-56 "
+                                  align="end"
+                                >
+                                  <DropdownMenuGroup>
+                                    <DropdownMenuItem className="py-2">
+                                      <Orbit className="w-3 h-3 text-[#F66435]" />
+                                      Profile
+                                    </DropdownMenuItem>
+                                    <DialogTrigger asChild>
+                                      <DropdownMenuItem className="py-2">
+                                        <CircleSlash2 className="text-[#F66435]" />
+                                        UnFriend
+                                      </DropdownMenuItem>
+                                    </DialogTrigger>
+                                  </DropdownMenuGroup>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
                             </div>
                           </div>
-                          <div>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <CircleSmall />
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent
-                                className="w-56 "
-                                align="end"
+
+                          <DialogContent className="sm:max-w-[425px]">
+                            <DialogHeader>
+                              <DialogTitle>Unfriend</DialogTitle>
+                              <DialogDescription>
+                                Are you sure you want to unfriend this person?
+                              </DialogDescription>
+                            </DialogHeader>
+
+                            <DialogFooter>
+                              <DialogClose asChild>
+                                <Button variant="outline">Cancel</Button>
+                              </DialogClose>
+                              <Button
+                                onClick={() => handleUnfriend(friend?._id)}
                               >
-                                <DropdownMenuGroup>
-                                  <DropdownMenuItem className="py-2">
-                                    <Orbit className="w-3 h-3 text-[#F66435]" />
-                                    Profile
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem className="py-2">
-                                    {" "}
-                                    <CircleSlash2 className="text-[#F66435]" />
-                                    UnFriend
-                                  </DropdownMenuItem>
-                                </DropdownMenuGroup>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </div>
-                        </div>
+                                Confirm
+                              </Button>
+                            </DialogFooter>
+                          </DialogContent>
+                        </Dialog>
                       </Card>
                     ))
                   ) : (
@@ -378,6 +416,7 @@ export default function ProfilePage() {
           </div>
 
           {/* Dialog Form - Upload on Submit */}
+
           <DialogContent className="sm:max-w-[425px]">
             <form onSubmit={handleSubmit}>
               <DialogHeader>

@@ -46,8 +46,25 @@ export const postApi = createApi({
   tagTypes: ["Post"],
   endpoints: (builder) => ({
     //GET POSTS
-    getPosts: builder.query<Post[], void>({
-      query: () => "posts",
+    getPosts: builder.query<
+      { posts: Post[]; page: number; totalPages: number },
+      number
+    >({
+      query: (page = 1) => `posts?page=${page}`,
+      serializeQueryArgs: () => "posts",
+      merge: (currentCache, newData) => {
+        // Prevent duplicate posts by ID
+        const existingIds = new Set(currentCache.posts.map((p) => p._id));
+
+        const filtered = newData.posts.filter((p) => !existingIds.has(p._id));
+
+        currentCache.posts.push(...filtered);
+        currentCache.page = newData.page;
+        currentCache.totalPages = newData.totalPages;
+      },
+      forceRefetch({ currentArg, previousArg }) {
+        return currentArg !== previousArg;
+      },
       providesTags: ["Post"],
     }), // GET /posts
     // getPost: builder.query<Post, number>(), // GET /posts/:id
@@ -79,7 +96,7 @@ export const postApi = createApi({
     }),
 
     // LIKE/UNLIKE POST
-    likePost: builder.mutation<Post,  string >({
+    likePost: builder.mutation<Post, string>({
       query: (postId) => ({
         url: `posts/like/${postId}`,
         method: "POST",

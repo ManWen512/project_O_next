@@ -1,13 +1,31 @@
 "use client";
 
-import { useGetFriendByIdQuery } from "@/services/friends";
+import {
+  useAddFriendsMutation,
+  useGetFriendByIdQuery,
+  useUnFriendMutation,
+} from "@/services/friends";
 import { useParams } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { CircleSlash2, CircleSmall, Earth, LockKeyhole, Orbit } from "lucide-react";
+import {
+  CircleArrowOutUpRight,
+  CircleSlash2,
+  CircleSmall,
+  Earth,
+  LockKeyhole,
+  Orbit,
+  SquarePen,
+} from "lucide-react";
 import {
   Dialog,
   DialogClose,
@@ -30,15 +48,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useSession } from "next-auth/react";
 import { useGetFriendsListsQuery } from "@/services/friends";
-import {
-  useUploadProfileMutation,
-  useUpdateUserMutation,
-} from "@/services/user";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useGetUserPostsQuery } from "@/services/post";
 import { ImageCarousel } from "@/components/imageCarousel";
 import { PostCard } from "@/components/postCard";
+import { Sheet, SheetContent, SheetHeader } from "@/components/ui/sheet";
+import Profile from "@/components/profile";
+import { useMediaQuery } from "@/components/useMediaQuery";
+import { Spinner } from "@/components/ui/spinner";
 
 interface ProfileDetailPageProps {
   params: {
@@ -63,213 +81,342 @@ function timeAgo(dateString: string): string {
 export default function ProfileDetailPage() {
   const params = useParams();
   const id = params?.id as string;
+  const [sideCol, setSideCol] = useState<boolean>(false);
+  const [selectedUserId, setSelectedUserId] = useState<string>("");
+  const isMobile = useMediaQuery("(max-width: 640px)");
+  const { data: session } = useSession();
   const { data: userById } = useGetFriendByIdQuery(id, {
     skip: !id, // Only fetch when selectedUserId exists
+  });
+  const { data: sideColUser } = useGetFriendByIdQuery(selectedUserId, {
+    skip: !selectedUserId, // Only fetch when selectedUserId exists
   });
   const { data: alreadyFriend } = useGetFriendsListsQuery(id, {
     skip: !id, // Only fetch when selectedUserId exists
   });
   const { data: posts } = useGetUserPostsQuery();
+  const [unfriend, { isLoading }] = useUnFriendMutation();
+  const [newFriend] = useAddFriendsMutation();
 
-  console.log(userById);
+  const handleSideCol = (id: string) => {
+    setSideCol(true);
+    setSelectedUserId(id);
+  };
+
+  const handleUnfriend = async (friendId?: string) => {
+    if (!friendId) return;
+    try {
+      await unfriend(friendId).unwrap();
+      toast.success("Unfriended Successfully!");
+    } catch (err) {
+      console.error("Delete failed", err);
+    }
+  };
+
+  const handleSendRequest = async (recipientId: string) => {
+    try {
+      await newFriend({
+        recipientId,
+      }).unwrap();
+
+      toast.success("Friend request sent successfully!");
+    } catch (error) {
+      console.error("Error sending friend request:", error);
+
+      if (error && typeof error === "object" && "data" in error) {
+        const err = error as { data?: { message?: string } };
+        toast.error(err.data?.message ?? "Something went wrong!");
+      } else {
+        toast.error("Something went wrong!");
+      }
+    }
+  };
+
+  const formattedUser = sideColUser?.user
+    ? { ...sideColUser.user, id: sideColUser.user._id }
+    : undefined;
+
+  const isAlreadyFriend = alreadyFriend?.some(
+    (friend) => friend._id === session?.user.id
+  );
+
   return (
     <div className="w-full">
       <div className="grid grid-cols-4 gap-2 w-full">
-        <div className="sm:col-span-3 col-span-4 p-4 sm:mx-15">
-          <div className="flex justify-between">
-            <div className="flex mt-2 z-50">
-              <SidebarTrigger className="-ml-1 sm:hidden mr-1" />
-              <div className="text-lg font-semibold">Profile</div>
-            </div>
-            <img
-              src="/logo.PNG"
-              alt="Logo"
-              className="inline h-12 w-12 -mt-1 sm:hidden"
-            />
-          </div>
-
-          <div>
-            <Card className="relative w-full h-40 bg-gray-100 mt-4">
-              {/* Outside Dialog - Instant Upload */}
-              <Avatar className="absolute -bottom-9 left-10 h-22 w-22 rounded-full">
-                <AvatarImage
-                  src={userById?.user?.profileImage}
-                  alt="User Avatar"
-                />
-                <AvatarFallback className="rounded-full bg-gray-400">
-                  {userById?.user?.name?.charAt(0).toUpperCase() || "CN"}
-                </AvatarFallback>
-              </Avatar>
-            </Card>
-
-            <div className="pt-6">
-              <div className="flex mt-4 justify-between items-center">
-                <CardTitle className="text-2xl">
-                  {userById?.user?.name}
-                </CardTitle>
+        <Dialog>
+          <div className="sm:col-span-3 col-span-4 p-4 sm:mx-15">
+            <div className="flex justify-between">
+              <div className="flex mt-2 z-50">
+                <SidebarTrigger className="-ml-1 sm:hidden mr-1" />
+                <div className="text-lg font-semibold">Profile</div>
               </div>
+              <img
+                src="/logo.PNG"
+                alt="Logo"
+                className="inline h-12 w-12 -mt-1 sm:hidden"
+              />
+            </div>
 
-              <CardDescription className="text-sm mt-2">
-                {userById?.user?.bio || "No bio yet"}
-              </CardDescription>
+            <div>
+              <Card className="relative w-full h-40 bg-gray-100 mt-4">
+                {/* Outside Dialog - Instant Upload */}
+                <Avatar className="absolute -bottom-9 left-10 h-22 w-22 rounded-full">
+                  <AvatarImage
+                    src={userById?.user?.profileImage}
+                    alt="User Avatar"
+                  />
+                  <AvatarFallback className="rounded-full bg-gray-400">
+                    {userById?.user?.name?.charAt(0).toUpperCase() || "CN"}
+                  </AvatarFallback>
+                </Avatar>
+              </Card>
 
-              <CardDescription className="mt-1">
-                email: {userById?.user?.email}
-              </CardDescription>
-              <Tabs defaultValue="post">
-                <div className="flex mt-4 justify-start gap-2 items-center">
-                  <TabsList>
-                    <TabsTrigger value="post">
-                      <Label className="cursor-pointer">
-                        {posts?.length || 0} Posts
-                      </Label>
-                    </TabsTrigger>
-                    <TabsTrigger value="friend">
-                      <Label>{alreadyFriend?.length || 0} Friends</Label>
-                    </TabsTrigger>
-                  </TabsList>
-                </div>
-                <TabsContent value="post">
-                  <Card className="mt-2 p-2 gap-2">
-                    {userById?.posts?.map((post) => (
-                      <Card
-                        key={post._id}
-                        className="relative  mt-4 shadow-sm  rounded-4xl"
+              <div className="pt-6">
+                <div className="flex mt-4 justify-between items-center">
+                  <CardTitle className="text-2xl">
+                    {userById?.user?.name}
+                  </CardTitle>
+                  {isAlreadyFriend ? (
+                    <DialogTrigger asChild>
+                      <Button>
+                        <CircleSlash2 />
+                        <p className="sm:block hidden">Unfriend</p>
+                      </Button>
+                    </DialogTrigger>
+                  ) : (
+                    <div>
+                      <Button
+                        onClick={() => handleSendRequest(userById?.user._id!)}
                       >
-                        <div className="">
-                          <CardHeader className="flex  items-center px-3 sm:px-6">
-                            <Avatar className="h-8 w-8 rounded-full  overflow-hidden">
-                              <AvatarImage
-                                src={post.user?.profileImage}
-                                alt="User Avatar"
-                                className=""
-                              />
-                              <AvatarFallback className="rounded-full bg-gray-400">
-                                CN
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              
-                                <CardTitle className="ml-1 text-sm font-medium ">
-                                  {post.user?.name}
-                                </CardTitle>
-                        
+                        <CircleArrowOutUpRight />
+                        <p className="sm:block hidden">Add Friend</p>
+                      </Button>
+                    </div>
+                  )}
+                </div>
 
-                              <CardDescription className="ml-1 text-sm font-medium flex items-center ">
-                                {timeAgo(post.createdAt)}.
-                                {post.visibility === "public" ? (
-                                  <Earth className="w-4 h-4 ml-2 mt-1" />
-                                ) : (
-                                  <LockKeyhole className="w-4 h-4 ml-2 mt-1" />
-                                )}
-                              </CardDescription>
-                            </div>
-                          </CardHeader>{" "}
-                          <div className="absolute top-6 right-6  ">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <CircleSmall />
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent className="w-56" align="end">
-                                <DropdownMenuGroup>
-                                  <DropdownMenuItem>Profile</DropdownMenuItem>
-                                  <DropdownMenuItem>
-                                    Billing
-                                    <DropdownMenuShortcut>
-                                      ⌘B
-                                    </DropdownMenuShortcut>
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem>
-                                    Settings
-                                    <DropdownMenuShortcut>
-                                      ⌘S
-                                    </DropdownMenuShortcut>
-                                  </DropdownMenuItem>
-                                </DropdownMenuGroup>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </div>
-                        </div>
+                <CardDescription className="text-sm mt-2">
+                  {userById?.user?.bio || "No bio yet"}
+                </CardDescription>
 
-                        <CardContent className="px-3 sm:px-6">
-                          <ImageCarousel postImages={post.image} />
-                          <div className="ml-2 text-sm font-medium whitespace-break-spaces">
-                            {post?.content}
-                          </div>
-                          <PostCard
-                            key={post._id}
-                            _id={post._id}
-                            likes={post?.likes}
-                          />
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </Card>
-                </TabsContent>
-
-                {/* friends tab */}
-                <TabsContent value="friend">
-                  <Card className="mt-2 p-2 gap-2">
-                    {alreadyFriend && alreadyFriend?.length > 0 ? (
-                      alreadyFriend?.map((friend) => (
-                        <Card className="p-3" key={friend._id}>
-                          <div className="flex justify-between items-center">
-                            <div className="flex items-center gap-3">
-                              <Avatar className="h-8 w-8 rounded-full">
+                <CardDescription className="mt-1">
+                  email: {userById?.user?.email}
+                </CardDescription>
+                <Tabs defaultValue="post">
+                  <div className="flex mt-4 justify-start gap-2 items-center">
+                    <TabsList>
+                      <TabsTrigger value="post">
+                        <Label className="cursor-pointer">
+                          {posts?.length || 0} Posts
+                        </Label>
+                      </TabsTrigger>
+                      <TabsTrigger value="friend">
+                        <Label>{alreadyFriend?.length || 0} Friends</Label>
+                      </TabsTrigger>
+                    </TabsList>
+                  </div>
+                  <TabsContent value="post">
+                    <Card className="mt-2 p-2 gap-2">
+                      {userById?.posts?.map((post) => (
+                        <Card
+                          key={post._id}
+                          className="relative  mt-4 shadow-sm  rounded-4xl"
+                        >
+                          <div className="">
+                            <CardHeader className="flex  items-center px-3 sm:px-6">
+                              <Avatar className="h-8 w-8 rounded-full  overflow-hidden">
                                 <AvatarImage
-                                  src={friend?.profileImage}
+                                  src={post.user?.profileImage}
                                   alt="User Avatar"
+                                  className=""
                                 />
                                 <AvatarFallback className="rounded-full bg-gray-400">
                                   CN
                                 </AvatarFallback>
                               </Avatar>
                               <div>
-                                <span className="font-semibold">
-                                  {friend?.name}
-                                </span>
-                                <CardDescription className="text-xs">
-                                  {friend?.bio}
+                                <CardTitle className="ml-1 text-sm font-medium ">
+                                  {post.user?.name}
+                                </CardTitle>
+
+                                <CardDescription className="ml-1 text-sm font-medium flex items-center ">
+                                  {timeAgo(post.createdAt)}.
+                                  {post.visibility === "public" ? (
+                                    <Earth className="w-4 h-4 ml-2 mt-1" />
+                                  ) : (
+                                    <LockKeyhole className="w-4 h-4 ml-2 mt-1" />
+                                  )}
                                 </CardDescription>
                               </div>
-                            </div>
-                            <div>
+                            </CardHeader>{" "}
+                            <div className="absolute top-6 right-6  ">
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                   <CircleSmall />
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent
-                                  className="w-56 "
+                                  className="w-56"
                                   align="end"
                                 >
                                   <DropdownMenuGroup>
-                                    <DropdownMenuItem className="py-2">
-                                      <Orbit className="w-3 h-3 text-[#F66435]" />
-                                      Profile
+                                    <Link
+                                      href={
+                                        post.user?._id === session?.user?.id
+                                          ? "/profile" // ⭐ your own profile
+                                          : `/profile/${post.user?._id}` // ⭐ other user's profile
+                                      }
+                                    >
+                                      <DropdownMenuItem>
+                                        Profile
+                                      </DropdownMenuItem>
+                                    </Link>
+                                    <DropdownMenuItem>
+                                      Billing
+                                      <DropdownMenuShortcut>
+                                        ⌘B
+                                      </DropdownMenuShortcut>
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem className="py-2">
-                                      {" "}
-                                      <CircleSlash2 className="text-[#F66435]" />
-                                      UnFriend
+                                    <DropdownMenuItem>
+                                      Settings
+                                      <DropdownMenuShortcut>
+                                        ⌘S
+                                      </DropdownMenuShortcut>
                                     </DropdownMenuItem>
                                   </DropdownMenuGroup>
                                 </DropdownMenuContent>
                               </DropdownMenu>
                             </div>
                           </div>
+
+                          <CardContent className="px-3 sm:px-6">
+                            <ImageCarousel postImages={post.image} />
+                            <div className="ml-2 text-sm font-medium whitespace-break-spaces">
+                              {post?.content}
+                            </div>
+                            <PostCard
+                              key={post._id}
+                              _id={post._id}
+                              likes={post?.likes}
+                            />
+                          </CardContent>
                         </Card>
-                      ))
-                    ) : (
-                      <CardDescription className="p-3">
-                        There are no Friends
-                      </CardDescription>
-                    )}
-                  </Card>
-                </TabsContent>
-              </Tabs>
+                      ))}
+                    </Card>
+                  </TabsContent>
+
+                  {/* friends tab */}
+                  <TabsContent value="friend">
+                    <Card className="mt-2 p-2 gap-2">
+                      {alreadyFriend && alreadyFriend?.length > 0 ? (
+                        alreadyFriend?.map((friend) => (
+                          <Card
+                            className="p-3"
+                            key={friend._id}
+                            onClick={() => handleSideCol(friend._id)}
+                          >
+                            <div className="flex justify-between items-center">
+                              <div className="flex items-center gap-3">
+                                <Avatar className="h-8 w-8 rounded-full">
+                                  <AvatarImage
+                                    src={friend?.profileImage}
+                                    alt="User Avatar"
+                                  />
+                                  <AvatarFallback className="rounded-full bg-gray-400">
+                                    CN
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div>
+                                  <span className="font-semibold">
+                                    {friend?.name}
+                                  </span>
+                                  <CardDescription className="text-xs">
+                                    {friend?.bio}
+                                  </CardDescription>
+                                </div>
+                              </div>
+                              <div>
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <CircleSmall />
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent
+                                    className="w-56 "
+                                    align="end"
+                                  >
+                                    <DropdownMenuGroup>
+                                      <Link
+                                        href={
+                                          friend._id === session?.user?.id
+                                            ? "/profile" // ⭐ your own profile
+                                            : `/profile/${friend._id}` // ⭐ other user's profile
+                                        }
+                                      >
+                                        <DropdownMenuItem className="py-2">
+                                          <Orbit className="w-3 h-3 text-[#F66435]" />
+                                          Profile
+                                        </DropdownMenuItem>
+                                      </Link>
+                                      <DropdownMenuItem className="py-2">
+                                        {" "}
+                                        <CircleSlash2 className="text-[#F66435]" />
+                                        UnFriend
+                                      </DropdownMenuItem>
+                                    </DropdownMenuGroup>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </div>
+                            </div>
+                          </Card>
+                        ))
+                      ) : (
+                        <CardDescription className="p-3">
+                          There are no Friends
+                        </CardDescription>
+                      )}
+                    </Card>
+                  </TabsContent>
+                </Tabs>
+              </div>
             </div>
           </div>
-        </div>
+          {sideCol &&
+            (isMobile ? (
+              <Sheet open={sideCol} onOpenChange={setSideCol}>
+                <SheetContent className="p-2">
+                  <SheetHeader className="p-4">
+                    {formattedUser && <Profile user={formattedUser} />}
+                  </SheetHeader>
+                </SheetContent>
+              </Sheet>
+            ) : (
+              <div className="hidden sm:block col-span-1 sticky top-6 mr-5 pt-4 h-fit">
+                {formattedUser && <Profile user={formattedUser} />}
+              </div>
+            ))}
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Unfriend</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to unfriend this person?
+              </DialogDescription>
+            </DialogHeader>
+
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button variant="outline">Cancel</Button>
+              </DialogClose>
+              <Button onClick={() => handleUnfriend(userById?.user?._id)}>
+                {isLoading ? (
+                  <>
+                    <Spinner className="animate-spin w-4 h-4" /> Confirming
+                  </>
+                ) : (
+                  "Confirm"
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

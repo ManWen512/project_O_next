@@ -2,21 +2,12 @@
 
 import * as React from "react";
 import {
-  IconCamera,
   IconChartBar,
   IconDashboard,
-  IconDatabase,
-  IconFileAi,
-  IconFileDescription,
-  IconFileWord,
-  IconFolder,
-  IconHelp,
-  IconInnerShadowTop,
   IconListDetails,
-  IconReport,
   IconSearch,
   IconSettings,
-  IconUsers,
+  IconCrown,
 } from "@tabler/icons-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -59,15 +50,16 @@ const data = {
       icon: IconChartBar,
     },
     {
+      title: "O Chat",
+      url: "/oChat",
+      icon: IconCrown,
+    },
+    {
       title: "Settings",
       url: "/setting",
       icon: IconSettings,
     },
-    {
-      title: "Get Help",
-      url: "#",
-      icon: IconHelp,
-    },
+
     {
       title: "Search",
       url: "#",

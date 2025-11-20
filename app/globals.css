@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -122,4 +123,15 @@
   }
 }
 
-
+.markdown table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.markdown th, .markdown td {
+  border: 1px solid #e5e7eb; /* gray-300 */
+  padding: 8px;
+}
+.markdown th {
+  background: #f3f4f6; /* gray-100 */
+  font-weight: 600;
+}

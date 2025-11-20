@@ -68,7 +68,6 @@ export default function Friends() {
   const [sideCol, setSideCol] = useState<boolean>(false);
   const [selectedUserId, setSelectedUserId] = useState<string>("");
   const { data: session, status } = useSession();
-  const requesterId = session?.user.id;
   const isMobile = useMediaQuery("(max-width: 640px)");
   const { data: searchUsers } = useGetFriendsQuery();
   const { data: pendingUsers } = useGetPendingFriendsQuery();
@@ -88,10 +87,8 @@ export default function Friends() {
   const [rejectFriend] = useRejectFriendsMutation();
 
   const handleSendRequest = async (recipientId: string) => {
-    if (!requesterId) return;
     try {
       await newFriend({
-        requesterId: requesterId,
         recipientId,
       }).unwrap();
 
@@ -347,7 +344,7 @@ export default function Friends() {
               </SheetContent>
             </Sheet>
           ) : (
-           <div className="hidden sm:block col-span-1 sticky top-6 mr-5 pt-4 h-fit">
+            <div className="hidden sm:block col-span-1 sticky top-6 mr-5 pt-4 h-fit">
               {formattedUser && <Profile user={formattedUser} />}
             </div>
           ))}

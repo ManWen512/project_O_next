@@ -53,6 +53,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
+import Link from "next/link";
 
 interface Post {
   _id: string;
@@ -183,9 +184,11 @@ export default function MyFeeds() {
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <CardTitle className="ml-2 text-sm font-medium ">
-                            {post?.user?.name}
-                          </CardTitle>
+                          <Link href="/profile">
+                            <CardTitle className="ml-2 text-sm font-medium ">
+                              {post?.user?.name}
+                            </CardTitle>
+                          </Link>
 
                           <CardDescription className="ml-2 text-sm font-medium flex items-center ">
                             {timeAgo(post.createdAt)}.{" "}
@@ -387,7 +390,10 @@ export default function MyFeeds() {
                 disabled={isLoading}
               >
                 {isLoading ? (
-                 <> <Spinner className="animate-spin w-4 h-4" /> Confirming</>
+                  <>
+                    {" "}
+                    <Spinner className="animate-spin w-4 h-4" /> Confirming
+                  </>
                 ) : (
                   "Confirm"
                 )}

@@ -1,10 +1,11 @@
 "use client";
 
-import { Heart, NotebookPen } from "lucide-react";
+import {  NotebookPen } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useLikePostMutation } from "@/services/post";
 import { useSession } from "next-auth/react";
+import { Heart } from "./animate-ui/icons/heart";
 
 
 interface PostProps {
@@ -40,7 +41,7 @@ export function PostCard({ _id, likes }: PostProps) {
           onClick={handleLike}
           className="flex items-center cursor-pointer"
         >
-          <Heart
+        <Heart animateOnHover 
             className=" w-4 h-4 mr-2 text-[#F66435]"
             fill={`${liked ? "#F66435" : "white"}`}
           />

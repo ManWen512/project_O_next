@@ -7,7 +7,6 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 export default function Feeds() {
   return (
     <div className="w-full">
-      
       <div className="grid grid-cols-4 gap-2 w-full">
         <div className="sm:col-span-3 col-span-4 p-4 sm:mx-15">
           <div className="flex justify-between">
@@ -21,8 +20,10 @@ export default function Feeds() {
               className="inline h-12 w-12 -mt-1 sm:hidden "
             />
           </div>
-          <Posts />
-         <div className="relative">
+          <div >
+            <Posts />
+          </div>
+          <div className="relative">
             <PostDrawer />
           </div>
         </div>

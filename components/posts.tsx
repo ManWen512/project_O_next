@@ -11,6 +11,7 @@ import {
 import Image from "next/image";
 import { ImageCarousel } from "./imageCarousel";
 import { useEffect, useState } from "react";
+import { useRef, UIEvent } from "react";
 import {
   CircleDot,
   CircleSmall,
@@ -65,27 +66,41 @@ function timeAgo(dateString: string): string {
 }
 
 export default function Posts() {
-   const { data: session } = useSession();
-  const { data: posts, isLoading, error } = useGetPostsQuery();
+  const [page, setPage] = useState(1);
+  const { data: session } = useSession();
+  const { data, isLoading, error } = useGetPostsQuery(page);
 
-  if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error loading posts</div>;
 
-  return (
-    <div className="relative h-fit mb-[21vh]">
-      {/* <div className="absolute -top-1 -right-1 w-10 h-12 bg-white rounded-bl-2xl ">
-        <div className="absolute top-0 right-10 w-3 h-5 bg-white"></div>
-        <div className="absolute top-12 right-0 w-5 h-3 bg-white"></div>
-      </div>
-      <div className="absolute top-0 right-9 w-12 h-12 bg-orange-50 rounded-tr-2xl "></div>
-       <div className="absolute top-11 right-0 w-12 h-8 bg-orange-50 rounded-tr-2xl "></div> */}
+  // merged cache is available from data
+  const posts = data?.posts ?? [];
 
+  const handleScroll = (e: UIEvent<HTMLDivElement>) => {
+    const target = e.target as HTMLDivElement;
+
+    const atBottom =
+      target.scrollTop + target.clientHeight >= target.scrollHeight - 50;
+
+    if (atBottom && !isLoading && data && page < data.totalPages) {
+      setPage((prev) => prev + 1);
+    }
+  };
+
+  return (
+    <div
+      onScroll={handleScroll}
+      className="relative  h-[68vh] overflow-y-auto"
+    >
       {posts?.map((post) => (
         <Card key={post._id} className="relative  mt-4 shadow-sm  rounded-4xl">
           <div className="">
             <CardHeader className="flex  items-center px-3 sm:px-6">
               <Avatar className="h-8 w-8 rounded-full  overflow-hidden">
-                <AvatarImage src={post.user?.profileImage} alt="User Avatar" className="" />
+                <AvatarImage
+                  src={post.user?.profileImage}
+                  alt="User Avatar"
+                  className=""
+                />
                 <AvatarFallback className="rounded-full bg-gray-400">
                   CN
                 </AvatarFallback>
@@ -144,6 +159,7 @@ export default function Posts() {
           </CardContent>
         </Card>
       ))}
+      {isLoading && <p className="text-center py-4 ">Loading...</p>}
     </div>
   );
 }
