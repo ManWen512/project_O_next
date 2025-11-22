@@ -6,7 +6,7 @@ import { Card } from "./ui/card";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
 import { SidebarTrigger } from "./ui/sidebar";
-import { useGetChatsQuery } from "@/services/aiChat";
+import { useGetChatsQuery, useGetRateLimitQuery } from "@/services/aiChat";
 import { ScrollArea } from "./ui/scroll-area";
 import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
@@ -25,12 +25,17 @@ export function Chat() {
   } = useGetChatsQuery();
   const [message, setMessage] = useState("");
   const [streaming, setStreaming] = useState(false);
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
+  const { data: getRatelimit } = useGetRateLimitQuery(session?.user?.id!, {
+    skip: status !== "authenticated" || !session?.user?.id,
+  });
 
   // local messages including streaming text
 
   const [localChats, setLocalChats] = useState<LocalChat[]>([]);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  console.log(getRatelimit);
 
   // auto-scroll
   useEffect(() => {
@@ -87,7 +92,7 @@ export function Chat() {
   };
 
   return (
-    <div className=" flex flex-col justify-between h-[88vh]">
+    <div className=" flex flex-col justify-between ">
       {/* Model tag */}
       <div className="flex mt-2">
         <Card className="p-2 text-xs flex gap-2 items-center flex-row bg-gray-100">
@@ -96,57 +101,69 @@ export function Chat() {
         </Card>
       </div>
 
-      {chatsloading && ( <div className="flex justify-center "><Spinner className="bg-gray-200 rounded-full w-7 h-7 p-1"/></div>)}
+      {chatsloading && (
+        <div className="flex justify-center ">
+          <Spinner className="bg-gray-200 rounded-full w-7 h-7 p-1" />
+        </div>
+      )}
 
       {/* Scrollable chat area */}
 
-      <div className="flex-1  my-2">
-        <ScrollArea className="h-[70vh] ">
-          {mergedChats?.map((chat, index) => (
-            <div key={`${chat._id || index}-${chat.output.length}`} className="mr-3">
-              {chat.prompt && (
-                <div className="flex justify-end ml-20 sm:ml-60 ">
-                  <Card className="p-4 my-2 bg-gray-100 text-sm">
-                    {chat.prompt}
-                  </Card>
-                </div>
-              )}
-              <Card className="p-4 my-2 inline-block ">
-                <div className="markdown prose prose-sm max-w-none leading-relaxed">
-                  <ReactMarkdown  key={chat.output.length} remarkPlugins={[remarkGfm]}>
-                    {chat.output}
-                  </ReactMarkdown>
-                </div>
-              </Card>
-            </div>
-          ))}
-          <div ref={bottomRef} />
-        </ScrollArea>
+      <div className="flex-1   h-screen ">
+        {mergedChats?.map((chat, index) => (
+          <div key={`${chat._id || index}-${chat.output}`} className="">
+            {chat.prompt && (
+              <div className="flex justify-end ml-20 sm:ml-60 ">
+                <Card className="p-4 my-2 bg-gray-100 text-sm">
+                  {chat.prompt}
+                </Card>
+              </div>
+            )}
+            <Card className="p-4 my-2 inline-block ">
+              <div className="markdown prose prose-sm max-w-none leading-relaxed">
+                <ReactMarkdown key={chat.output} remarkPlugins={[remarkGfm]}>
+                  {chat.output}
+                </ReactMarkdown>
+              </div>
+            </Card>
+          </div>
+        ))}
+        <div ref={bottomRef} />
+
+        <div className="h-20"></div>
       </div>
 
       {/* Input box at bottom */}
-      <div className="fixed bottom-0  right-0 bg-white  sm:w-4/5 w-full  p-2 z-50">
-        <div className="relative ">
-          <Input
-            placeholder="Type your message here."
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            disabled={streaming}
-            className="py-8"
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !streaming) {
-                e.preventDefault(); // prevent newline
-                handleSend();
-              }
-            }}
-          />
-          <Button
-            onClick={handleSend}
-            disabled={streaming}
-            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-xl"
-          >
-            {streaming ? <Spinner /> : <CircleArrowOutUpRight />}
-          </Button>
+      <div className="flex justify-center mx-4">
+        <div className="fixed bottom-0   bg-white  sm:w-4/5 w-full  p-2 z-50">
+          {getRatelimit?.isLimited && (
+            <div className="bg-gray-100 py-2 px-4 rounded-t-2xl text-sm">
+              Your daily limit is 5 requests per day. You’ve used all your
+              requests for today. Please try again tomorrow.
+            </div>
+          )}
+          <div className="relative ">
+            <Input
+              placeholder="Type your message here."
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              disabled={streaming || getRatelimit?.isLimited}
+              className="py-8 "
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !streaming) {
+                  e.preventDefault(); // prevent newline
+                  handleSend();
+                }
+              }}
+            />
+            <Button
+              onClick={handleSend}
+              disabled={streaming || getRatelimit?.isLimited}
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-xl"
+            >
+              {streaming ? <Spinner /> : <CircleArrowOutUpRight />}
+            </Button>
+          </div>
         </div>
       </div>
     </div>

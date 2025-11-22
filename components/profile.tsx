@@ -1,4 +1,4 @@
-import { ImagePlus, SquarePen } from "lucide-react";
+import { ImagePlus, SquareArrowOutUpRight, SquarePen } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Card, CardDescription, CardTitle } from "./ui/card";
 import { Label } from "./ui/label";
@@ -42,7 +42,7 @@ export default function Profile({ user }: ProfileProps) {
             }
           >
             <div className="flex mt-4 justify-between items-center">
-              <CardTitle className=" text-2xl ">{user?.name}</CardTitle>
+              <CardTitle className=" text-2xl ">{user?.name}<SquareArrowOutUpRight className="inline-block w-4 h-4 ml-2" /></CardTitle>
             </div>
           </Link>
           <CardDescription className="text-sm">{user?.bio}</CardDescription>

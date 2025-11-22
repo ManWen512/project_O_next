@@ -42,7 +42,7 @@ export function ImageCarousel({ postImages }: { postImages?: string[] }) {
 
       {/* Dialog Carousel when clicked */}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-3xl bg-transparent border-none shadow-none">
+        <DialogContent className="max-w-xl  w-xs bg-transparent border-none shadow-none">
           <DialogTitle className="sr-only">Image Carousel</DialogTitle>
           <Carousel
             className="w-full"

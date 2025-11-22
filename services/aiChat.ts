@@ -18,6 +18,12 @@ interface chatResponse {
   type: string;
 }
 
+interface RateLimit {
+  isLimited: boolean;
+  count: number;
+  timeLeftMinutes:number;
+}
+
 // Create post slice
 export const aiApi = createApi({
   reducerPath: "aiApi", // unique key for the reducer
@@ -42,9 +48,14 @@ export const aiApi = createApi({
       query: () => "ai/chat",
       providesTags: ["ai"],
     }),
+       getRateLimit: builder.query<RateLimit, string>({
+      query: (userId) => `ai/get-ratelimit/${userId}`,
+      providesTags: ["ai"],
+    }),
+   
    
  
   }),
 });
 
-export const { useGetChatsQuery } = aiApi;
+export const { useGetChatsQuery, useGetRateLimitQuery } = aiApi;

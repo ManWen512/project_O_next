@@ -356,11 +356,6 @@ export default function ProfileDetailPage() {
                                           Profile
                                         </DropdownMenuItem>
                                       </Link>
-                                      <DropdownMenuItem className="py-2">
-                                        {" "}
-                                        <CircleSlash2 className="text-[#F66435]" />
-                                        UnFriend
-                                      </DropdownMenuItem>
                                     </DropdownMenuGroup>
                                   </DropdownMenuContent>
                                 </DropdownMenu>

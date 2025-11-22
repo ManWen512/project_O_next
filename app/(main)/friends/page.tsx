@@ -146,7 +146,7 @@ export default function Friends() {
       <div className="grid grid-cols-4 gap-2">
         <Tabs
           defaultValue="searchFriends"
-          className="mb-4 sm:col-span-3 col-span-4 sm:mx-15  "
+          className="mb-4 sm:col-span-3 col-span-4 sm:mx-15 p-4 "
         >
           <div className="flex justify-between">
             <div className="">
