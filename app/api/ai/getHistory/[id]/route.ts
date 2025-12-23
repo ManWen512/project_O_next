@@ -3,10 +3,10 @@ import AiContentModel from "@/models/AiContentModel";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params;
+    const { id } = await context.params;
     
     // Get all prompts and outputs for this chat
     const contents = await AiContentModel.find({ chatId: id })

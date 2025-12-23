@@ -8,12 +8,12 @@ interface ImageContent {
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+ context: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
 
-    const { id } = await params;
+    const { id } = await context.params;
 
     // ✅ find returns an array
     const contents = (await AiContentModel.find({ chatId: id })

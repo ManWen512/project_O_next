@@ -4,12 +4,12 @@ import { NextResponse } from "next/server";
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+ context: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
 
-    const { id } = await params;
+    const { id } = await context.params;
     const { imageIds } = await request.json();
 
 
