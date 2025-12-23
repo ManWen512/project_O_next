@@ -1,6 +1,16 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  turbopack: {
+    resolveAlias: {
+      // Use empty object or specific paths instead of false
+      net: {},
+      dns: {},
+      tls: {},
+      fs: {},
+      child_process: {},
+    },
+  },
   images: {
     remotePatterns: [
       {

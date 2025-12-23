@@ -2,11 +2,40 @@ import { chat, toolDefinition, toServerSentEventsStream } from "@tanstack/ai";
 import { geminiText } from "@tanstack/ai-gemini";
 import { openaiText } from "@tanstack/ai-openai";
 import { connectDB } from "@/lib/db";
+// import { redis } from "@/lib/redis";
 
 import z from "zod";
 import AiContentModel from "@/models/AiContentModel";
 import { create } from "node:domain";
 const UNSPLASH_ACCESS_KEY = process.env.UNSPLASH_ACCESS_KEY!;
+
+const MAX_REQUESTS = 5; // per user
+const WINDOW_MS = 24 * 60 * 60 * 1000; // 1 day in ms
+
+// const checkRateLimit = async (userId:string) => {
+//   const key = `aichat:${userId}`; // unique per user
+
+
+//   // increment count
+//   const count = await redis.incr(key);
+
+//   // if this is the 1st request, set TTL
+//   if (count === 1) {
+//     await redis.expire(key,Math.ceil(WINDOW_MS / 1000));
+    
+//   }
+
+//   // how much time is left
+//   const ttlMs = await redis.pTTL(key);
+//   const timeLeftMinutes = Math.ceil(ttlMs / 1000 / 60);
+
+//   return {
+//     count,
+//     isLimited: count > MAX_REQUESTS,
+//     timeLeftMinutes,
+//   };
+// };
+
 
 export async function POST(request: Request) {
   await connectDB();
@@ -61,8 +90,6 @@ export async function POST(request: Request) {
       messages: cleanMessages,
 
       tools: [
-        getTodosTool,
-        updateCounterToolDef,
         suggestPostImagesToolDef,
         createPostToolDef,
       ],
