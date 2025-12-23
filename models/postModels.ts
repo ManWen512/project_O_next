@@ -1,0 +1,40 @@
+import mongoose from "mongoose";
+import User from "./User";
+
+const postSchema = new mongoose.Schema(
+  {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    content: {
+      type: String,
+      required: true,
+    },
+    image: {
+      type: [String], // optional image URL
+      default: [],
+    },
+    tags: {
+      type: [String],
+    },
+    visibility: {
+      type: String,
+      enum: ["public", "private"],
+      default: "public",
+    },
+    likes: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User", // users who liked this post
+      },
+    ],
+  },
+  { timestamps: true }
+);
+
+export default mongoose.models.Post ||
+  mongoose.model("Post", postSchema);
+
+
