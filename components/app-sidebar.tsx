@@ -72,6 +72,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data: session } = useSession();
   const { data: pendingUsers } = useGetPendingFriendsQuery();
 
+  console.log(session?.user)
+
   const pendingCount = pendingUsers?.length ?? 0;
 
   const navWithNotifications = data.navMain.map((item) =>

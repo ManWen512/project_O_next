@@ -388,7 +388,7 @@ export function ChatNew({ userId }: { userId: string | undefined }) {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Type a message..."
-            className="py-6"
+            className="py-6 pr-15"
             disabled={isLoading}
           />
           <Button

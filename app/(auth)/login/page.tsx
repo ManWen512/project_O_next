@@ -48,6 +48,7 @@ function LoginForm() {
   const reset = searchParams.get("reset");
   const toastShown = useRef(false);
   const [defaultEmail, setDefaultEmail] = useState("");
+  const callbackUrl = searchParams.get("callbackUrl") || "/";
 
   useEffect(() => {
     const email = searchParams.get("email");
@@ -225,9 +226,7 @@ function LoginForm() {
                   <Button
                     variant="outline"
                     type="button"
-                    onClick={() => {
-                      window.location.href = `/api/auth/google`;
-                    }}
+                    onClick={() => signIn("google", { callbackUrl })}
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                       <path
@@ -237,28 +236,7 @@ function LoginForm() {
                     </svg>
                     Continue with Google
                   </Button>
-                  <Button
-                    variant="outline"
-                    type="button"
-                    onClick={() => {
-                      window.location.href = "/api/auth/microsoft";
-                    }}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 48 48"
-                      width="48"
-                      height="48"
-                      role="img"
-                      aria-label="Microsoft logo"
-                    >
-                      <rect x="2" y="2" width="20" height="20" fill="#000" />
-                      <rect x="26" y="2" width="20" height="20" fill="#000" />
-                      <rect x="2" y="26" width="20" height="20" fill="#000" />
-                      <rect x="26" y="26" width="20" height="20" fill="#000" />
-                    </svg>
-                    Continue with Microsoft
-                  </Button>
+
                   <FieldDescription className="px-6 text-center">
                     Don&apos;t have an account?{" "}
                     <Link

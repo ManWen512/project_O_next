@@ -243,16 +243,7 @@ const getTodosToolDef = toolDefinition({
   name: "get_todos",
 });
 
-const getTodosTool = getTodosToolDef.server(async ({ query }) => {
-  const url = new URL("https://jsonplaceholder.typicode.com/todos");
-  if (query) url.searchParams.set("q", query);
-  console.log(url.toString());
-
-  const response = await fetch(url.toString());
-
-  return await response.json();
-});
-
+  
 export const updateCounterToolDef = toolDefinition({
   name: "set_count",
   description: "Set the counter value stored in the browser",

@@ -362,29 +362,7 @@ export default function SignupPage() {
                     </svg>
                     Continue with Google
                   </Button>
-                  <Button
-                    variant="outline"
-                    type="button"
-                    onClick={() => {
-                      // Redirect to Microsoft OAuth
-                      window.location.href = "/api/auth/microsoft";
-                    }}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 48 48"
-                      width="48"
-                      height="48"
-                      role="img"
-                      aria-label="Microsoft logo"
-                    >
-                      <rect x="2" y="2" width="20" height="20" fill="#000" />
-                      <rect x="26" y="2" width="20" height="20" fill="#000" />
-                      <rect x="2" y="26" width="20" height="20" fill="#000" />
-                      <rect x="26" y="26" width="20" height="20" fill="#000" />
-                    </svg>
-                    Continue with Microsoft
-                  </Button>
+                
                   <FieldDescription className="px-6 text-center">
                     Already have an account?{" "}
                     <Link href="/login" className="text-[#F66435]">

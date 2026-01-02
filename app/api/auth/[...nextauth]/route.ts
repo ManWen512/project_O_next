@@ -1,6 +1,7 @@
 // app/api/auth/[...nextauth]/route.ts
 import NextAuth, { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import GoogleProvider from "next-auth/providers/google";
 import bcrypt from "bcrypt";
 import { connectDB } from "@/lib/db";
 import User from "@/models/User";
@@ -8,6 +9,10 @@ import jwt from "jsonwebtoken";
 
 export const authOptions: AuthOptions = {
   providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
     CredentialsProvider({
       name: "Credentials",
       credentials: {
@@ -52,10 +57,49 @@ export const authOptions: AuthOptions = {
     strategy: "jwt",
     maxAge: 7 * 24 * 60 * 60, // 7 days
   },
-  jwt: {
-    secret: process.env.AUTH_SECRET,
-  },
+ 
   callbacks: {
+    async signIn({ user, account, profile }) {
+      // ✅ Handle Google OAuth sign-in
+      if (account?.provider === "google") {
+        try {
+          await connectDB();
+          
+          // Check if user exists
+          let existingUser = await User.findOne({ email: user.email });
+          
+          if (!existingUser) {
+            // Create new user for Google sign-in
+            existingUser = await User.create({
+              email: user.email,
+              name: user.name,
+              profileImage: user.image,
+              isVerified: true, // Google users are auto-verified
+              authProvider: "google",
+              googleId: account.providerAccountId,
+            });
+          } else if (!existingUser.googleId) {
+            // Link Google account to existing user
+            existingUser.googleId = account.providerAccountId;
+            existingUser.authProvider = "google";
+            existingUser.isVerified = true;
+            await existingUser.save();
+          }
+          
+          // Update user object with DB info
+          user.id = existingUser._id.toString();
+          user.profileImage = existingUser.profileImage;
+          user.bio = existingUser.bio;
+          
+          return true;
+        } catch (error) {
+          console.error("Error in Google sign-in:", error);
+          return false;
+        }
+      }
+      
+      return true;
+    },
     async jwt({ token, user, account, trigger, session }) {
       try {
         if (user) {
@@ -117,6 +161,8 @@ export const authOptions: AuthOptions = {
     signIn: "/auth/signin",
     error: "/auth/error",
   },
+
+  secret: process.env.NEXTAUTH_SECRET,
 };
 
 const handler = NextAuth(authOptions);

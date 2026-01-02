@@ -35,7 +35,7 @@ export function NavUser({
     id: string;
     name: string;
     email: string;
-    profileImage?: string;
+    image?: string;
   };
 }) {
   const { isMobile } = useSidebar();
@@ -45,7 +45,7 @@ export function NavUser({
       <SidebarMenuItem>
         <div className="flex items-center justify-center mb-3">
           <Avatar className="h-18 w-18 rounded-full ">
-            <AvatarImage src={user?.profileImage} alt={user?.name} />
+            <AvatarImage src={user?.image} alt={user?.name} />
             <AvatarFallback className="rounded-lg">CN</AvatarFallback>
           </Avatar>
         </div>
@@ -73,7 +73,7 @@ export function NavUser({
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user?.profileImage} alt={user?.name} />
+                  <AvatarImage src={user?.image} alt={user?.name} />
                   <AvatarFallback className="rounded-lg">CN</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
